@@ -259,7 +259,7 @@ details.fold > summary .muted { font-family: var(--font-body); font-weight: 400;
 details.fold > summary:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .fold-body { padding: 0 0 1.6rem; }
 
-/* appendix content */
+/* data notes content */
 .notes h3 { font-size: 1.02rem; margin-top: 1.6rem; }
 .notes h3:first-child { margin-top: 0; }
 .notes ul { padding-left: 1.2rem; margin: 0; }
