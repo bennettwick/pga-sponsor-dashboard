@@ -290,7 +290,7 @@
       { label: "Ball-striking year-to-year correlation", corr: s.bsCorr, note: "Pearson r, season t vs. t+1" },
     ];
     el.innerHTML = cards
-      .map((c, i) => {
+      .map((c) => {
         const n = c.stat ? c.stat.n : c.corr.n;
         let body;
         if (n < minGroup) {
@@ -302,7 +302,7 @@
           body = `<div class="card-value">${c.corr.r.toFixed(2)}</div><div class="card-count">${c.corr.n.toLocaleString("en-US")} pairs</div>`;
         }
         return (
-          `<div class="card ${c.cls || ""}"><div class="card-head"><span class="card-hole">No. ${i + 1}</span></div>` +
+          `<div class="card ${c.cls || ""}">` +
           `<div class="card-label">${esc(c.label)}</div>${body}<div class="card-note">${esc(c.note)}</div></div>`
         );
       })

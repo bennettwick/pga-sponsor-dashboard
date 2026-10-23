@@ -32,9 +32,7 @@
     $("player").addEventListener("input", onPlayerInput);
     $("player").addEventListener("change", onPlayerInput);
     $("group").addEventListener("change", () => update({ group: $("group").value }));
-    document.querySelectorAll("input[name=cutoff]").forEach((r) =>
-      r.addEventListener("change", () => update({ cutoff: +r.value }))
-    );
+    $("cutoff").addEventListener("change", () => update({ cutoff: +$("cutoff").value }));
     $("putting").addEventListener("change", () => update({ putting: $("putting").checked }));
     $("reset").addEventListener("click", reset);
     $("cost-cand").addEventListener("input", renderCost);
@@ -75,7 +73,7 @@
     $("group").value = state.group;
     $("putting").checked = state.putting;
     $("player").value = state.player;
-    document.querySelectorAll("input[name=cutoff]").forEach((r) => (r.checked = +r.value === state.cutoff));
+    $("cutoff").value = String(state.cutoff);
     document.querySelectorAll("[data-range]").forEach((b) => {
       const [a, z] = b.dataset.range.split("-").map(Number);
       b.setAttribute("aria-pressed", String(a === state.seasonFrom && z === state.seasonTo));
@@ -210,7 +208,7 @@
     const el = $("spotlight");
     const seasonsTxt = hist.length === 1 ? "1 qualified season" : `${hist.length} qualified seasons`;
     el.innerHTML =
-      `<div class="spotlight-head"><div><p class="kicker">Player spotlight</p><h3 id="spot-name">${C.esc(state.player)}</h3>` +
+      `<div class="spotlight-head"><div><h3 id="spot-name">${C.esc(state.player)}</h3>` +
       `<p class="muted" style="margin:0">${seasonsTxt}, 2015–2021. Groups use the current cutoff and putting setting.</p></div>` +
       `<button type="button" id="spot-close">Clear player</button></div>` +
       `<p class="chart-title">Top-10 rate by season</p><p class="chart-sub">Dashed line: elite threshold (30%). Red dots: candidate seasons.</p>` +
@@ -219,7 +217,7 @@
       `<th class="n">Top-10 rate</th><th class="n">Ball-striking</th><th class="n">BS pct</th><th class="n">Putting</th><th>Elite next season</th></tr></thead><tbody>` +
       hist.map((r) => {
         const g = B.groupOf(r, opts);
-        return `<tr><td>${r.season}${r.season === B.WATCH_SEASON ? " <span class='tag'>watch list year</span>" : ""}</td>` +
+        return `<tr><td>${r.season}${r.season === B.WATCH_SEASON ? " <span class='tag plain'>(watch list year)</span>" : ""}</td>` +
           `<td><span class="tag ${g}">${GROUP_LABEL[g]}</span></td><td class="n">${r.starts}</td><td class="n">${r.top10s}</td>` +
           `<td class="n">${F.pct(r.top10_rate)}</td><td class="n">${F.sg(r.ball_striking)}</td><td class="n">${F.pct(r.bs_pct, 0)}</td>` +
           `<td class="n">${F.sg(r.sg_putt)}</td><td>${nextLabel(r)}</td></tr>`;

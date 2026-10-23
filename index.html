@@ -5,30 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Breakout Watch: Report</title>
   <meta name="description" content="Do PGA Tour players with top-15% ball-striking and below-average putting become elite the next season more often than other players? Player-seasons 2015–2020.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23173a24'/%3E%3Cpath d='M12 7v19' stroke='%23fffcf5' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M13 7l10 4-10 4z' fill='%23c8462c'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M11 4v23' stroke='%231f2521' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M12 4l12 4.5L12 13z' fill='%23c8462c'/%3E%3Cellipse cx='11' cy='28' rx='7' ry='2' fill='%232d5e3a'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <nav class="nav" aria-label="Site">
     <div class="nav-inner">
       <a class="brand" href="index.html">
-        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#2a5a36"/><ellipse cx="13" cy="25.5" rx="5" ry="1.6" fill="#173a24"/><path d="M12 6v19.5" stroke="#fffcf5" stroke-width="2" stroke-linecap="round"/><path d="M13 6l10 4-10 4z" fill="#c8462c"/></svg>
+        <svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true"><path d="M5 1.5v17" stroke="#1f2521" stroke-width="1.8" stroke-linecap="round"/><path d="M6 1.5l9 3.4L6 8.3z" fill="#c8462c"/><ellipse cx="5" cy="19.6" rx="4.5" ry="1.4" fill="#2d5e3a"/></svg>
         Breakout Watch
       </a>
       <div class="nav-links">
         <a href="index.html" aria-current="page">Report</a>
         <a href="dashboard.html">Dashboard</a>
-        <a href="index.html#data-notes">Data notes</a>
       </div>
     </div>
   </nav>
 
-  <main>
+  <main class="site-main">
     <header class="page-head wrap">
-      <p class="kicker">Sponsor scouting report · PGA Tour</p>
       <h1>Do strong ball-strikers with cold putters become elite?</h1>
       <p class="subtitle">PGA Tour player-seasons with 10+ strokes-gained events, 2015–2020 vs. the following season</p>
       <p class="byline">Bennett Wicker</p>
@@ -37,41 +35,35 @@
     <div class="wrap">
       <div id="load-error" hidden class="error-box"></div>
 
-      <p class="lede recommend">
+      <p class="lede">
         <strong>Yes.</strong> Players who were not yet elite, ranked in the top 15% for ball-striking and putted below tour average
         became elite the next season at nearly four times the rate of other non-elite players:
-        <strong><span data-k="cand.rate">…</span></strong> (<span data-k="cand.of">…</span>) against
-        <strong><span data-k="other.rate">…</span></strong> (<span data-k="other.of">…</span>), or <span data-k="ratio">…</span>×.
+        <span data-k="cand.rate">…</span> (<span data-k="cand.of">…</span>) against
+        <span data-k="other.rate">…</span> (<span data-k="other.of">…</span>), or <span data-k="ratio">…</span>×.
         Ball-striking repeats from year to year and putting repeats less than ball-striking, so a cold putter on a strong ball-striker is usually temporary.
-        <strong>Recommendation: build your signing shortlist from candidates; it takes about <span data-k="cand.signRound">…</span> candidate signings per breakout
-        (<span data-k="cand.sign">…</span>) against about <span data-k="other.signRound">…</span> otherwise (<span data-k="other.sign">…</span>).</strong>
+        <strong>Recommendation:</strong> build your signing shortlist from candidates; it takes about <span data-k="cand.signRound">…</span> candidate signings per breakout
+        (<span data-k="cand.sign">…</span>) against about <span data-k="other.signRound">…</span> otherwise (<span data-k="other.sign">…</span>).
       </p>
       <p class="premise">
         Premise: sponsor value is concentrated in elite players, so the goal is to find future elite players early.
         The data has no sales or contract figures, so this report measures who becomes elite, not what they are worth.
       </p>
-    </div>
 
-    <section class="wrap" aria-labelledby="cards-h">
-      <h2 id="cards-h">The scorecard</h2>
-      <p class="muted">Season <i>t</i> = 2015–2020, <span data-k="rows">…</span> player-seasons. Each rate shows its count, because the groups are small.</p>
-      <div class="cards" id="cards"></div>
-      <p class="defs">
-        <b>Elite:</b> a top-10 finish in at least 30% of starts.
-        <b>Candidate:</b> not elite, ball-striking (off the tee + approach, per round) above the 85th percentile of qualified players that season, and putting below tour average (strokes gained putting &lt; 0).
-        <b>Breakout:</b> not elite in season <i>t</i>, elite in season <i>t+1</i>. A player with no qualifying next season counts as not elite.
-      </p>
-    </section>
+      <section aria-labelledby="cards-h">
+        <h2 id="cards-h">The scorecard</h2>
+        <p class="muted">Season <i>t</i> = 2015–2020, <span data-k="rows">…</span> player-seasons. Each rate shows its count, because the groups are small.</p>
+        <div class="cards" id="cards"></div>
+        <p class="defs">
+          <b>Elite:</b> a top-10 finish in at least 30% of starts.
+          <b>Candidate:</b> not elite, ball-striking (off the tee + approach, per round) above the 85th percentile of qualified players that season, and putting below tour average (strokes gained putting &lt; 0).
+          <b>Breakout:</b> not elite in season <i>t</i>, elite in season <i>t+1</i>. A player with no qualifying next season counts as not elite.
+        </p>
+      </section>
 
-    <hr class="section-rule wrap">
+      <section aria-labelledby="findings-h">
+        <h2 id="findings-h">Findings</h2>
 
-    <section class="wrap" aria-labelledby="findings-h">
-      <h2 id="findings-h">Findings</h2>
-      <p class="muted">Why it works, what it shows, how much it matters, and who to watch.</p>
-
-      <article class="finding">
-        <p class="kicker">Finding 1 · Why</p>
-        <h3>Ball-striking predicts next season; putting barely does</h3>
+        <h3>1. Ball-striking predicts next season; putting barely does</h3>
         <p>
           Across the <span data-k="f1.n">…</span> player-seasons with a qualified next season, total strokes gained has the strongest link to next season's
           top-10 rate (r = <span data-k="f1.sg_total">…</span>). Ball-striking comes next at <span data-k="f1.ball_striking">…</span>,
@@ -79,14 +71,13 @@
           <span data-k="f1.sg_putt">…</span>. Ball-striking also carries over better: its year-to-year correlation is <span data-k="bs.r">…</span>,
           against <span data-k="putt.r">…</span> for putting. This season's ball-striking is a better guide to next season than this season's putting.
         </p>
-        <p class="chart-title">Correlation of each season-<i>t</i> measure with next season's top-10 rate</p>
-        <p class="chart-sub">Pearson r, <span data-k="f1.n">…</span> player-seasons, season <i>t</i> = 2015–2020</p>
-        <div class="chart" id="f1-chart"></div>
-      </article>
+        <figure>
+          <p class="chart-title">Correlation of each season-<i>t</i> measure with next season's top-10 rate</p>
+          <p class="chart-sub">Pearson r, <span data-k="f1.n">…</span> player-seasons, season <i>t</i> = 2015–2020</p>
+          <div class="chart" id="f1-chart"></div>
+        </figure>
 
-      <article class="finding">
-        <p class="kicker">Finding 2 · What</p>
-        <h3>Candidates break out nearly four times as often</h3>
+        <h3>2. Candidates break out nearly four times as often</h3>
         <p>
           Of the <span data-k="cand.n">…</span> candidate player-seasons, <span data-k="cand.hits">…</span> became elite the next season
           (<span data-k="cand.rate">…</span>). Of the <span data-k="other.n">…</span> other non-elite player-seasons, <span data-k="other.hits">…</span> did
@@ -94,14 +85,13 @@
           of elite players (<span data-k="elite.of">…</span>) stayed elite. The candidate rate rests on <span data-k="cand.hits">…</span> breakouts,
           so treat it as a strong lead rather than a precise figure.
         </p>
-        <p class="chart-title">Share elite the next season, by group in season <i>t</i></p>
-        <p class="chart-sub">Season <i>t</i> = 2015–2020; count of player-seasons beside each bar</p>
-        <div class="chart" id="f2-chart"></div>
-      </article>
+        <figure>
+          <p class="chart-title">Share elite the next season, by group in season <i>t</i></p>
+          <p class="chart-sub">Season <i>t</i> = 2015–2020; count of player-seasons beside each bar</p>
+          <div class="chart" id="f2-chart"></div>
+        </figure>
 
-      <article class="finding">
-        <p class="kicker">Finding 3 · Why it holds</p>
-        <h3>Candidates' putting recovers while ball-striking mostly holds</h3>
+        <h3>3. Candidates' putting recovers while ball-striking mostly holds</h3>
         <p>
           For the <span data-k="f3.n">…</span> candidates with a qualified next season, average putting improved from
           <span data-k="f3.puttFrom">…</span> to <span data-k="f3.puttTo">…</span> strokes per round, recovering
@@ -109,18 +99,17 @@
           <span data-k="f3.bsTo">…</span>, keeping <span data-k="f3.bsKept">…</span> of the edge. Both moves are partly regression to the mean,
           which is expected for any group picked for extreme values; for a sponsor, the point is that the weakness fades faster than the strength.
         </p>
-        <p class="chart-title">Candidates' average strokes gained per round, season <i>t</i> (tee) to season <i>t+1</i> (pin)</p>
-        <p class="chart-sub"><span data-k="f3.n">…</span> candidates with a qualified next season; 0 = tour average</p>
-        <div class="legend" aria-hidden="true">
-          <span><svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="#fffcf5" stroke="#c8462c" stroke-width="2.5"/></svg> Season <i>t</i> (tee)</span>
-          <span><svg width="14" height="16"><path d="M3 1v14" stroke="#1c2a20" stroke-width="2"/><path d="M4 1l9 3.5L4 8z" fill="#c8462c"/></svg> Season <i>t+1</i> (pin)</span>
-        </div>
-        <div class="chart" id="f3-chart"></div>
-      </article>
+        <figure>
+          <p class="chart-title">Candidates' average strokes gained per round, season <i>t</i> (tee) to season <i>t+1</i> (pin)</p>
+          <p class="chart-sub"><span data-k="f3.n">…</span> candidates with a qualified next season; 0 = tour average</p>
+          <div class="legend" aria-hidden="true">
+            <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#fffdf8" stroke="#c8462c" stroke-width="2"/></svg> Season <i>t</i> (tee)</span>
+            <span><svg width="12" height="14"><path d="M2.5 1v12" stroke="#1f2521" stroke-width="1.5"/><path d="M3.5 1l7 3L3.5 7z" fill="#c8462c"/></svg> Season <i>t+1</i> (pin)</span>
+          </div>
+          <div class="chart" id="f3-chart"></div>
+        </figure>
 
-      <article class="finding">
-        <p class="kicker">Finding 4 · How much</p>
-        <h3>The signal strengthens as the ball-striking cutoff tightens</h3>
+        <h3>4. The signal strengthens as the ball-striking cutoff tightens</h3>
         <p>
           Keeping the putting condition and tightening the ball-striking cutoff raises the candidate breakout rate from
           <span data-k="f4.20.rate">…</span> (<span data-k="f4.20.of">…</span>) at the top 20% to <span data-k="f4.5.rate">…</span>
@@ -129,146 +118,143 @@
           <span data-k="f4.5.n">…</span> player-seasons. The top-15% cutoff keeps a workable group while still beating the other non-elite rate
           (<span data-k="other.rate">…</span>) by <span data-k="ratio">…</span>×.
         </p>
-        <p class="chart-title">Candidate breakout rate by ball-striking cutoff</p>
-        <p class="chart-sub">Non-elite players above the cutoff with below-average putting; season <i>t</i> = 2015–2020. Grey bar: other non-elite players at the default top-15% cutoff.</p>
-        <div class="chart" id="f4-chart"></div>
-      </article>
+        <figure>
+          <p class="chart-title">Candidate breakout rate by ball-striking cutoff</p>
+          <p class="chart-sub">Non-elite players above the cutoff with below-average putting; season <i>t</i> = 2015–2020. Grey bar: other non-elite players at the default top-15% cutoff.</p>
+          <div class="chart" id="f4-chart"></div>
+        </figure>
 
-      <article class="finding">
-        <p class="kicker">Finding 5 · How long</p>
-        <h3>A first breakout holds less often than established elite status</h3>
+        <h3>5. A first breakout holds less often than established elite status</h3>
         <p>
           Two seasons ahead, <span data-k="f5.b.hits">…</span> of <span data-k="f5.b.n">…</span> new breakouts (<span data-k="f5.b.rate">…</span>)
           were still elite, against <span data-k="f5.r.hits">…</span> of <span data-k="f5.r.n">…</span> players who were already elite two years running
           (<span data-k="f5.r.rate">…</span>). This check needs season <i>t+2</i>, so it uses season <i>t</i> = 2015–2019 (2022 is partial).
           Expect some breakouts to fade: a first elite season is less durable than a repeat one.
         </p>
-        <p class="chart-title">Still elite two seasons later (season <i>t+2</i>)</p>
-        <p class="chart-sub">Window: season <i>t</i> = 2015–2019. New breakouts: not elite in <i>t</i>, elite in <i>t+1</i>. Established: elite in both <i>t</i> and <i>t+1</i>.</p>
-        <div class="chart" id="f5-chart"></div>
-      </article>
-    </section>
+        <figure>
+          <p class="chart-title">Still elite two seasons later (season <i>t+2</i>)</p>
+          <p class="chart-sub">Window: season <i>t</i> = 2015–2019. New breakouts: not elite in <i>t</i>, elite in <i>t+1</i>. Established: elite in both <i>t</i> and <i>t+1</i>.</p>
+          <div class="chart" id="f5-chart"></div>
+        </figure>
+      </section>
 
-    <hr class="section-rule wrap">
+      <section aria-labelledby="watch-h">
+        <h2 id="watch-h">Players to watch: the 2021 candidates</h2>
+        <p>
+          These <span data-k="watch.n">…</span> players met the candidate definition in 2021, the last full season in the data. Their next season
+          is not in the data (it ends June 5, 2022), so this is a list to watch, not a finding.
+        </p>
+        <figure>
+          <p class="chart-title">Ball-striking vs. putting, 2021 qualified players</p>
+          <p class="chart-sub">Strokes gained per round; 0 = tour average. Candidates labeled.</p>
+          <div class="legend" aria-hidden="true">
+            <span><i class="swatch candidate"></i> 2021 candidate</span>
+            <span><i class="swatch other"></i> Other non-elite</span>
+            <span><i class="swatch elite"></i> Elite</span>
+          </div>
+          <div class="chart" id="watch-chart"></div>
+        </figure>
+        <figure>
+          <p class="chart-title">Scorecard: 2021 candidates</p>
+          <div class="table-wrap">
+            <table class="scorecard" id="watch-table" aria-label="2021 candidates to watch"></table>
+          </div>
+        </figure>
+      </section>
 
-    <section class="wrap" aria-labelledby="watch-h">
-      <p class="kicker">To watch · not yet a result</p>
-      <h2 id="watch-h">Players to watch: the 2021 candidates</h2>
-      <p class="narrow">
-        These <span data-k="watch.n">…</span> players met the candidate definition in 2021, the last full season in the data. Their next season
-        is not in the data (it ends June 5, 2022), so this is a list to watch, not a finding.
-      </p>
-      <div class="panel">
-        <p class="chart-title">Ball-striking vs. putting, 2021 qualified players</p>
-        <p class="chart-sub">Strokes gained per round; 0 = tour average. Candidates labeled.</p>
-        <div class="legend" aria-hidden="true">
-          <span><i class="swatch candidate"></i> 2021 candidate</span>
-          <span><i class="swatch other"></i> Other non-elite</span>
-          <span><i class="swatch elite"></i> Elite</span>
+      <section class="notes" id="data-notes" aria-labelledby="notes-h">
+        <h2 id="notes-h">Data notes</h2>
+
+        <h3>Source</h3>
+        <ul>
+          <li><a href="https://www.kaggle.com/datasets/robikscube/pga-tour-golf-data-20152022">PGA Tour Golf Data (2015-2022)</a> on Kaggle by Rob Mulla,
+            originally from Advanced Sports Analytics. License: CC0 (public domain).</li>
+          <li>Every player is a professional tour golfer whose results are public. The data holds no other personal information.</li>
+          <li>The raw file, <code>pga_raw.csv</code>, has 36,864 rows and 37 columns: 499 players, 333 tournaments, seasons 2015–2022.</li>
+        </ul>
+
+        <h3>What one row is</h3>
+        <ul>
+          <li>Raw file: one player in one tournament.</li>
+          <li>Analysis file (<code>players.csv</code>, built by <code>prep_data.py</code>): one player in one season with at least 10 events that have strokes-gained data.
+            Both pages read this file and compute every number in the browser.</li>
+        </ul>
+
+        <h3>Rows dropped, and why</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Step</th><th>Rule</th><th class="n">Rows</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Drop both rows of every duplicated player id + tournament id pair</td><td class="n">42 (21 pairs)</td><td>Two golfers with the same name shared one ID</td></tr>
+              <tr><td>2</td><td>Drop the 2022 season</td><td class="n">3,674</td><td>Partial season: the data ends June 5, 2022</td></tr>
+              <tr><td>3</td><td>Remaining event rows, 2015–2021</td><td class="n">33,148</td><td>All count toward results (starts, top 10s)</td></tr>
+              <tr><td>4</td><td>Of those, rows with strokes-gained data</td><td class="n">26,032</td><td>Used for skill measures only</td></tr>
+              <tr><td>5</td><td>Keep player-seasons with at least 10 strokes-gained events</td><td class="n"><span data-k="qual.total">…</span> rows</td><td>Keeps regular tour players with a stable skill estimate. Per season: <span data-k="qual.seasons">…</span></td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="chart" id="watch-chart"></div>
-      </div>
-      <p class="chart-title" style="margin-top:1.2rem">Scorecard: 2021 candidates</p>
-      <div class="table-wrap">
-        <table class="scorecard" id="watch-table" aria-label="2021 candidates to watch"></table>
-      </div>
-    </section>
 
-    <hr class="section-rule wrap">
+        <h3>How the data was cleaned</h3>
+        <ul>
+          <li>Kept 18 of the 37 raw columns; dropped the fantasy-points columns, <code>date</code> (known errors; <code>season</code> is the time column) and three empty columns.</li>
+          <li>Dropped 42 rows (21 player id + tournament id pairs shared by two same-name golfers).</li>
+          <li>Dropped the partial 2022 season (3,674 rows), leaving 33,148 event rows for 2015–2021, 26,032 of them with strokes gained.</li>
+          <li>Kept player-seasons with at least 10 strokes-gained events: <span data-k="qual.total">…</span> rows, <span data-k="qual.range">…</span> per season.</li>
+          <li>Filled missing <code>pos</code> from <code>Finish</code> only when <code>made_cut</code> = 1 and <code>Finish</code> is a clean top 10 (1, 2, T8 and so on):
+            28 of 30 such rows counted, mostly the fall-2020 Shriners and Sanderson Farms. The 2 not counted are 2015–2016 Northern Trust rows with
+            <code>made_cut</code> = 0, where <code>Finish</code> is unreliable. This makes Abraham Ancer and Patrick Cantlay elite in 2021 and moves the other
+            non-elite breakout rate to 2.8% (26 of 941), from 2.6% (24 of 941) without the rule.</li>
+        </ul>
 
-    <section class="wrap notes" id="data-notes" aria-labelledby="notes-h">
-      <h2 id="notes-h">Data notes</h2>
+        <h3>Definitions</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+            <tbody>
+              <tr><td>Skill events</td><td>Events in the season with strokes-gained data</td></tr>
+              <tr><td>Qualified player-season</td><td>At least 10 skill events</td></tr>
+              <tr><td>Per-round strokes gained</td><td>Each category averaged over skill events, weighted by rounds played</td></tr>
+              <tr><td>Ball-striking</td><td>Strokes gained off the tee + approach, per round</td></tr>
+              <tr><td>Ball-striking percentile</td><td>Rank of ball-striking among qualified players in the same season (0–1)</td></tr>
+              <tr><td>Starts</td><td>All events played in the season, including majors and events without strokes gained</td></tr>
+              <tr><td>Top-10 rate</td><td>Top-10 finishes ÷ starts. A top 10 is <code>pos</code> ≤ 10; when <code>pos</code> is missing, <code>made_cut</code> = 1 and a clean <code>Finish</code> of 10 or better. Missed cuts, WD, DQ and MDF are not top 10.</td></tr>
+              <tr><td>Elite</td><td>Top-10 rate ≥ 30%</td></tr>
+              <tr><td>Below-average putting</td><td>Strokes gained putting &lt; 0 per round (0 = tour average)</td></tr>
+              <tr><td>Candidate</td><td>Not elite, ball-striking percentile &gt; 0.85, and below-average putting</td></tr>
+              <tr><td>Breakout</td><td>Not elite in season <i>t</i> and elite in season <i>t+1</i></td></tr>
+              <tr><td>No qualifying next season</td><td>No qualified row in <i>t+1</i>: counted as not elite, never dropped</td></tr>
+            </tbody>
+          </table>
+        </div>
 
-      <h3>Source</h3>
-      <ul>
-        <li><a href="https://www.kaggle.com/datasets/robikscube/pga-tour-golf-data-20152022">PGA Tour Golf Data (2015-2022)</a> on Kaggle by Rob Mulla,
-          originally from Advanced Sports Analytics. License: CC0 (public domain).</li>
-        <li>Every player is a professional tour golfer whose results are public. The data holds no other personal information.</li>
-        <li>The raw file, <code>pga_raw.csv</code>, has 36,864 rows and 37 columns: 499 players, 333 tournaments, seasons 2015–2022.</li>
-      </ul>
+        <h3>How each summary number is computed</h3>
+        <p>All four use rows with season <i>t</i> = 2015–2020.</p>
+        <ul>
+          <li><b>Candidate breakout rate</b> = candidate rows elite the next season ÷ all candidate rows.</li>
+          <li><b>Other non-elite breakout rate</b> = non-elite, non-candidate rows elite the next season ÷ all such rows.</li>
+          <li><b>Elite stay-elite rate</b> = elite rows elite the next season ÷ all elite rows.</li>
+          <li><b>Ball-striking year-to-year correlation</b> = Pearson correlation of ball-striking in season <i>t</i> and <i>t+1</i>, for rows with a qualified next season.</li>
+          <li>Signings per breakout = 1 ÷ breakout rate. Break-even cost ratio = other non-elite rate ÷ candidate rate.</li>
+        </ul>
 
-      <h3>What one row is</h3>
-      <ul>
-        <li>Raw file: one player in one tournament.</li>
-        <li>Analysis file (<code>players.csv</code>, built by <code>prep_data.py</code>): one player in one season with at least 10 events that have strokes-gained data.
-          Both pages read this file and compute every number in the browser.</li>
-      </ul>
-
-      <h3>Rows dropped, and why</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Step</th><th>Rule</th><th class="n">Rows</th><th>Why</th></tr></thead>
-          <tbody>
-            <tr><td>1</td><td>Drop both rows of every duplicated player id + tournament id pair</td><td class="n">42 (21 pairs)</td><td>Two golfers with the same name shared one ID</td></tr>
-            <tr><td>2</td><td>Drop the 2022 season</td><td class="n">3,674</td><td>Partial season: the data ends June 5, 2022</td></tr>
-            <tr><td>3</td><td>Remaining event rows, 2015–2021</td><td class="n">33,148</td><td>All count toward results (starts, top 10s)</td></tr>
-            <tr><td>4</td><td>Of those, rows with strokes-gained data</td><td class="n">26,032</td><td>Used for skill measures only</td></tr>
-            <tr><td>5</td><td>Keep player-seasons with at least 10 strokes-gained events</td><td class="n"><span data-k="qual.total">…</span> rows</td><td>Keeps regular tour players with a stable skill estimate. Per season: <span data-k="qual.seasons">…</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>How the data was cleaned</h3>
-      <ul>
-        <li>Kept 18 of the 37 raw columns; dropped the fantasy-points columns, <code>date</code> (known errors; <code>season</code> is the time column) and three empty columns.</li>
-        <li>Dropped 42 rows (21 player id + tournament id pairs shared by two same-name golfers).</li>
-        <li>Dropped the partial 2022 season (3,674 rows), leaving 33,148 event rows for 2015–2021, 26,032 of them with strokes gained.</li>
-        <li>Kept player-seasons with at least 10 strokes-gained events: <span data-k="qual.total">…</span> rows, <span data-k="qual.range">…</span> per season.</li>
-        <li>Filled missing <code>pos</code> from <code>Finish</code> only when <code>made_cut</code> = 1 and <code>Finish</code> is a clean top 10 (1, 2, T8 and so on):
-          28 of 30 such rows counted, mostly the fall-2020 Shriners and Sanderson Farms. The 2 not counted are 2015–2016 Northern Trust rows with
-          <code>made_cut</code> = 0, where <code>Finish</code> is unreliable. This makes Abraham Ancer and Patrick Cantlay elite in 2021 and moves the other
-          non-elite breakout rate to 2.8% (26 of 941), from 2.6% (24 of 941) without the rule.</li>
-      </ul>
-
-      <h3>Definitions</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Term</th><th>Definition</th></tr></thead>
-          <tbody>
-            <tr><td>Skill events</td><td>Events in the season with strokes-gained data</td></tr>
-            <tr><td>Qualified player-season</td><td>At least 10 skill events</td></tr>
-            <tr><td>Per-round strokes gained</td><td>Each category averaged over skill events, weighted by rounds played</td></tr>
-            <tr><td>Ball-striking</td><td>Strokes gained off the tee + approach, per round</td></tr>
-            <tr><td>Ball-striking percentile</td><td>Rank of ball-striking among qualified players in the same season (0–1)</td></tr>
-            <tr><td>Starts</td><td>All events played in the season, including majors and events without strokes gained</td></tr>
-            <tr><td>Top-10 rate</td><td>Top-10 finishes ÷ starts. A top 10 is <code>pos</code> ≤ 10; when <code>pos</code> is missing, <code>made_cut</code> = 1 and a clean <code>Finish</code> of 10 or better. Missed cuts, WD, DQ and MDF are not top 10.</td></tr>
-            <tr><td>Elite</td><td>Top-10 rate ≥ 30%</td></tr>
-            <tr><td>Below-average putting</td><td>Strokes gained putting &lt; 0 per round (0 = tour average)</td></tr>
-            <tr><td>Candidate</td><td>Not elite, ball-striking percentile &gt; 0.85, and below-average putting</td></tr>
-            <tr><td>Breakout</td><td>Not elite in season <i>t</i> and elite in season <i>t+1</i></td></tr>
-            <tr><td>No qualifying next season</td><td>No qualified row in <i>t+1</i>: counted as not elite, never dropped</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>How each summary number is computed</h3>
-      <p>All four use rows with season <i>t</i> = 2015–2020.</p>
-      <ul>
-        <li><b>Candidate breakout rate</b> = candidate rows elite the next season ÷ all candidate rows.</li>
-        <li><b>Other non-elite breakout rate</b> = non-elite, non-candidate rows elite the next season ÷ all such rows.</li>
-        <li><b>Elite stay-elite rate</b> = elite rows elite the next season ÷ all elite rows.</li>
-        <li><b>Ball-striking year-to-year correlation</b> = Pearson correlation of ball-striking in season <i>t</i> and <i>t+1</i>, for rows with a qualified next season.</li>
-        <li>Signings per breakout = 1 ÷ breakout rate. Break-even cost ratio = other non-elite rate ÷ candidate rate.</li>
-      </ul>
-
-      <h3>Caveats</h3>
-      <ul>
-        <li>Majors mostly lack strokes-gained data, so skill comes from other events while results include majors.</li>
-        <li>2020 was shortened by COVID. 2021 contains two Masters and two U.S. Opens because the 2020 events moved into the fall.</li>
-        <li>The groups are small: the candidate rate rests on <span data-k="cand.hits">…</span> breakouts in <span data-k="cand.n">…</span> player-seasons.</li>
-        <li>A second golfer with the same name could sit under a tour player's ID in events the tour player skipped.</li>
-        <li>Five 2016–2017 CareerBuilder Challenge rows have <code>pos</code> ≤ 10 (Hudson Swafford's 2017 win among them) but <code>made_cut</code> = 0 and
-          2 rounds; <code>pos</code> is kept and the other two fields are treated as errors. These rows have no strokes-gained data, so skill is unaffected.</li>
-        <li>Correlation is not proof of cause.</li>
-        <li>Finding 5 uses season <i>t</i> = 2015–2019 because it needs three consecutive seasons.</li>
-      </ul>
-    </section>
+        <h3>Caveats</h3>
+        <ul>
+          <li>Majors mostly lack strokes-gained data, so skill comes from other events while results include majors.</li>
+          <li>2020 was shortened by COVID. 2021 contains two Masters and two U.S. Opens because the 2020 events moved into the fall.</li>
+          <li>The groups are small: the candidate rate rests on <span data-k="cand.hits">…</span> breakouts in <span data-k="cand.n">…</span> player-seasons.</li>
+          <li>A second golfer with the same name could sit under a tour player's ID in events the tour player skipped.</li>
+          <li>Five 2016–2017 CareerBuilder Challenge rows have <code>pos</code> ≤ 10 (Hudson Swafford's 2017 win among them) but <code>made_cut</code> = 0 and
+            2 rounds; <code>pos</code> is kept and the other two fields are treated as errors. These rows have no strokes-gained data, so skill is unaffected.</li>
+          <li>Correlation is not proof of cause.</li>
+          <li>Finding 5 uses season <i>t</i> = 2015–2019 because it needs three consecutive seasons.</li>
+        </ul>
+      </section>
+    </div>
   </main>
 
   <footer class="site-foot">
     <div class="wrap">
       Bennett Wicker · Data: Kaggle “PGA Tour Golf Data (2015-2022)” (CC0) ·
-      <a href="dashboard.html">Explore the dashboard</a> ·
       <a href="https://github.com/bennettwick/pga-sponsor-dashboard">Repository</a>
     </div>
   </footer>

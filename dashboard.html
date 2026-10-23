@@ -5,36 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Breakout Watch: Dashboard</title>
   <meta name="description" content="Filter PGA Tour player-seasons by season, player, group, ball-striking cutoff and putting condition; every number is recomputed in the browser from players.csv.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23173a24'/%3E%3Cpath d='M12 7v19' stroke='%23fffcf5' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M13 7l10 4-10 4z' fill='%23c8462c'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M11 4v23' stroke='%231f2521' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M12 4l12 4.5L12 13z' fill='%23c8462c'/%3E%3Cellipse cx='11' cy='28' rx='7' ry='2' fill='%232d5e3a'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <nav class="nav" aria-label="Site">
     <div class="nav-inner">
       <a class="brand" href="index.html">
-        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#2a5a36"/><ellipse cx="13" cy="25.5" rx="5" ry="1.6" fill="#173a24"/><path d="M12 6v19.5" stroke="#fffcf5" stroke-width="2" stroke-linecap="round"/><path d="M13 6l10 4-10 4z" fill="#c8462c"/></svg>
+        <svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true"><path d="M5 1.5v17" stroke="#1f2521" stroke-width="1.8" stroke-linecap="round"/><path d="M6 1.5l9 3.4L6 8.3z" fill="#c8462c"/><ellipse cx="5" cy="19.6" rx="4.5" ry="1.4" fill="#2d5e3a"/></svg>
         Breakout Watch
       </a>
       <div class="nav-links">
         <a href="index.html">Report</a>
         <a href="dashboard.html" aria-current="page">Dashboard</a>
-        <a href="index.html#data-notes">Data notes</a>
       </div>
     </div>
   </nav>
 
-  <main>
-    <header class="page-head wrap">
-      <p class="kicker">Interactive dashboard</p>
+  <main class="site-main">
+    <header class="page-head wrap-wide">
       <h1>Do strong ball-strikers with cold putters become elite?</h1>
       <p class="subtitle">PGA Tour player-seasons with 10+ strokes-gained events, season <i>t</i> = 2015–2020 vs. the following season.
         Every number below is recomputed from <code>players.csv</code> for the rows you select.</p>
     </header>
 
-    <div class="wrap">
+    <div class="wrap-wide">
       <div id="load-error" hidden class="error-box"></div>
 
       <form class="filters" id="filters" onsubmit="return false" aria-label="Filters">
@@ -44,8 +42,6 @@
             <select id="from" aria-label="First season"></select>
             <span class="muted">to</span>
             <select id="to" aria-label="Last season"></select>
-          </div>
-          <div class="field-row" role="group" aria-label="Quick season ranges">
             <button type="button" data-range="2015-2020">All</button>
             <button type="button" data-range="2015-2017">2015–2017</button>
             <button type="button" data-range="2018-2020">2018–2020</button>
@@ -53,11 +49,8 @@
         </div>
         <div class="field">
           <label for="player">Player</label>
-          <div class="field-row">
-            <input type="search" id="player" list="player-list" placeholder="Search a player…" autocomplete="off">
-            <datalist id="player-list"></datalist>
-          </div>
-          <span class="muted" id="player-hint" style="font-size:.82rem;min-height:1.1em"></span>
+          <input type="search" id="player" list="player-list" placeholder="Search a player…" autocomplete="off">
+          <datalist id="player-list"></datalist>
         </div>
         <div class="field">
           <label for="group">Group</label>
@@ -69,13 +62,13 @@
           </select>
         </div>
         <div class="field">
-          <span class="field-label" id="cut-l">Ball-striking cutoff</span>
-          <div class="seg" role="radiogroup" aria-labelledby="cut-l">
-            <label><input type="radio" name="cutoff" value="20"><span>Top 20%</span></label>
-            <label><input type="radio" name="cutoff" value="15" checked><span>15%</span></label>
-            <label><input type="radio" name="cutoff" value="10"><span>10%</span></label>
-            <label><input type="radio" name="cutoff" value="5"><span>5%</span></label>
-          </div>
+          <label for="cutoff">Ball-striking cutoff</label>
+          <select id="cutoff">
+            <option value="20">Top 20%</option>
+            <option value="15">Top 15%</option>
+            <option value="10">Top 10%</option>
+            <option value="5">Top 5%</option>
+          </select>
         </div>
         <div class="field">
           <span class="field-label">Putting condition</span>
@@ -85,66 +78,59 @@
           <button type="button" class="btn-reset" id="reset">Reset filters</button>
         </div>
       </form>
+      <p class="muted" id="player-hint" style="font-size:.85rem;margin:.3rem 0 0;min-height:1.2em"></p>
       <p class="status" id="status" aria-live="polite"></p>
-    </div>
 
-    <section class="wrap" id="spotlight-wrap" hidden aria-labelledby="spot-name">
-      <div class="panel spotlight" id="spotlight"></div>
-    </section>
+      <section id="spotlight-wrap" hidden aria-labelledby="spot-name">
+        <div class="spotlight" id="spotlight"></div>
+      </section>
 
-    <section class="wrap" aria-label="Summary numbers">
-      <div class="cards" id="cards"></div>
-    </section>
+      <section aria-label="Summary numbers">
+        <div class="cards" id="cards"></div>
+      </section>
 
-    <section class="wrap" aria-label="Charts">
-      <div class="grid-2">
-        <div class="panel">
-          <p class="kicker">Finding 1</p>
-          <h3>What predicts next season's top-10 rate</h3>
-          <p class="chart-sub">Pearson r of each season-<i>t</i> measure with next season's top-10 rate; <span id="f1-n"></span></p>
-          <div class="chart" id="f1-chart"></div>
-        </div>
-        <div class="panel">
-          <p class="kicker">Finding 2</p>
-          <h3>Breakout rate by group</h3>
-          <p class="chart-sub">Share elite the next season, by group in season <i>t</i></p>
-          <div class="chart" id="f2-chart"></div>
-        </div>
-        <div class="panel">
-          <p class="kicker">Finding 3</p>
-          <h3>Candidates' putting and ball-striking, one season on</h3>
-          <p class="chart-sub">Average strokes gained per round, season <i>t</i> (tee) to <i>t+1</i> (pin); <span id="f3-n"></span></p>
-          <div class="legend" aria-hidden="true">
-            <span><svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="#fffcf5" stroke="#c8462c" stroke-width="2.5"/></svg> Season <i>t</i></span>
-            <span><svg width="14" height="16"><path d="M3 1v14" stroke="#1c2a20" stroke-width="2"/><path d="M4 1l9 3.5L4 8z" fill="#c8462c"/></svg> Season <i>t+1</i></span>
+      <section aria-label="Charts">
+        <div class="grid-2">
+          <div class="panel">
+            <h3>1. What predicts next season's top-10 rate</h3>
+            <p class="chart-sub">Pearson r of each season-<i>t</i> measure with next season's top-10 rate; <span id="f1-n"></span></p>
+            <div class="chart" id="f1-chart"></div>
           </div>
-          <div class="chart" id="f3-chart"></div>
-        </div>
-        <div class="panel">
-          <p class="kicker">Finding 4</p>
-          <h3>Breakout rate by ball-striking cutoff</h3>
-          <p class="chart-sub" id="f4-sub"></p>
-          <div class="chart" id="f4-chart"></div>
-        </div>
-        <div class="panel full">
-          <p class="kicker">Season <i>t</i> map</p>
-          <h3>Ball-striking vs. putting</h3>
-          <p class="chart-sub">Each dot is one player-season in the current view; 0 = tour average. Click a dot to open that player.</p>
-          <div class="legend" aria-hidden="true">
-            <span><i class="swatch candidate"></i> Candidate</span>
-            <span><i class="swatch other"></i> Other non-elite</span>
-            <span><i class="swatch elite"></i> Elite</span>
-            <span><i class="swatch ring"></i> Became elite next season (breakout)</span>
+          <div class="panel">
+            <h3>2. Breakout rate by group</h3>
+            <p class="chart-sub">Share elite the next season, by group in season <i>t</i></p>
+            <div class="chart" id="f2-chart"></div>
           </div>
-          <div class="chart" id="scatter"></div>
+          <div class="panel">
+            <h3>3. Candidates' putting and ball-striking, one season on</h3>
+            <p class="chart-sub">Average strokes gained per round, season <i>t</i> (tee) to <i>t+1</i> (pin); <span id="f3-n"></span></p>
+            <div class="legend" aria-hidden="true">
+              <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#fffdf8" stroke="#c8462c" stroke-width="2"/></svg> Season <i>t</i></span>
+              <span><svg width="12" height="14"><path d="M2.5 1v12" stroke="#1f2521" stroke-width="1.5"/><path d="M3.5 1l7 3L3.5 7z" fill="#c8462c"/></svg> Season <i>t+1</i></span>
+            </div>
+            <div class="chart" id="f3-chart"></div>
+          </div>
+          <div class="panel">
+            <h3>4. Breakout rate by ball-striking cutoff</h3>
+            <p class="chart-sub" id="f4-sub"></p>
+            <div class="chart" id="f4-chart"></div>
+          </div>
+          <div class="panel full">
+            <h3>Ball-striking vs. putting</h3>
+            <p class="chart-sub">Each dot is one player-season in the current view; 0 = tour average. Click a dot to open that player.</p>
+            <div class="legend" aria-hidden="true">
+              <span><i class="swatch candidate"></i> Candidate</span>
+              <span><i class="swatch other"></i> Other non-elite</span>
+              <span><i class="swatch elite"></i> Elite</span>
+              <span><i class="swatch ring"></i> Became elite next season (breakout)</span>
+            </div>
+            <div class="chart" id="scatter"></div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="wrap" aria-labelledby="cost-h">
-      <div class="panel">
-        <p><span class="assume-tag">Your assumptions</span></p>
-        <h3 id="cost-h">Cost per breakout</h3>
+      <section aria-labelledby="cost-h">
+        <h2 id="cost-h">Cost per breakout: your assumptions</h2>
         <p class="chart-sub">Enter what one signing costs. Breakout rates come from the current view; the costs are yours, not data.</p>
         <div class="cost-grid">
           <div class="cost-inputs">
@@ -162,21 +148,20 @@
             <p class="verdict" id="cost-verdict"></p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="wrap" aria-labelledby="table-h">
-      <h3 id="table-h">Rows behind this view <span class="muted" id="table-count" style="font-family:var(--font-body);font-size:1rem;font-weight:400"></span></h3>
-      <div class="table-wrap table-scroll">
-        <table id="rows-table" aria-label="Player-seasons in the current view"></table>
-      </div>
-    </section>
+      <section aria-labelledby="table-h">
+        <h2 id="table-h">Rows behind this view <span class="muted" id="table-count" style="font-family:var(--font-body);font-size:1rem;font-weight:400"></span></h2>
+        <div class="table-wrap table-scroll">
+          <table id="rows-table" aria-label="Player-seasons in the current view"></table>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer class="site-foot">
-    <div class="wrap">
+    <div class="wrap-wide">
       Bennett Wicker · Data: Kaggle “PGA Tour Golf Data (2015-2022)” (CC0) ·
-      <a href="index.html">Read the report</a> ·
       <a href="https://github.com/bennettwick/pga-sponsor-dashboard">Repository</a>
     </div>
   </footer>
