@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Breakout Watch: Dashboard</title>
-  <meta name="description" content="Filter PGA Tour player-seasons by season, player, group, ball-striking cutoff and putting condition; every number is recomputed in the browser from players.csv.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M11 4v23' stroke='%231f2521' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M12 4l12 4.5L12 13z' fill='%23c8462c'/%3E%3Cellipse cx='11' cy='28' rx='7' ry='2' fill='%232d5e3a'/%3E%3C/svg%3E">
+  <meta name="description" content="Filter PGA Tour player-seasons by season, player, group, ball-striking cutoff and putting condition; every number and chart updates to match.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M11 4v23' stroke='%231d221f' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M12 4l12 4.5L12 13z' fill='%23c0392b'/%3E%3Cellipse cx='11' cy='28' rx='7' ry='2' fill='%232d5e3a'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
   <nav class="nav" aria-label="Site">
     <div class="nav-inner">
       <a class="brand" href="index.html">
-        <svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true"><path d="M5 1.5v17" stroke="#1f2521" stroke-width="1.8" stroke-linecap="round"/><path d="M6 1.5l9 3.4L6 8.3z" fill="#c8462c"/><ellipse cx="5" cy="19.6" rx="4.5" ry="1.4" fill="#2d5e3a"/></svg>
+        <svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true"><path d="M5 1.5v17" stroke="#1d221f" stroke-width="1.8" stroke-linecap="round"/><path d="M6 1.5l9 3.4L6 8.3z" fill="#c0392b"/><ellipse cx="5" cy="19.6" rx="4.5" ry="1.4" fill="#2d5e3a"/></svg>
         Breakout Watch
       </a>
       <div class="nav-links">
@@ -25,138 +25,167 @@
     </div>
   </nav>
 
-  <main class="site-main">
-    <header class="page-head wrap-wide">
+  <main class="site-main wrap-wide">
+    <header class="page-head">
       <h1>Do strong ball-strikers with cold putters become elite?</h1>
-      <p class="subtitle">PGA Tour player-seasons with 10+ strokes-gained events, season <i>t</i> = 2015–2020 vs. the following season.
-        Every number below is recomputed from <code>players.csv</code> for the rows you select.</p>
+      <p class="subtitle subtitle-wide">PGA Tour player-seasons with 10+ strokes-gained events, 2015–2020, each compared with the next season.</p>
     </header>
 
-    <div class="wrap-wide">
-      <div id="load-error" hidden class="error-box"></div>
+    <div id="load-error" hidden class="error-box"></div>
 
-      <form class="filters" id="filters" onsubmit="return false" aria-label="Filters">
+    <p class="intro">Choose which seasons, players or player types to look at. Every number and chart below updates. Reset filters returns to the report's numbers.</p>
+    <form class="filters" id="filters" onsubmit="return false" aria-label="Filters">
+      <div class="filter-row">
+        <fieldset class="field">
+          <legend class="field-label">Seasons</legend>
+          <div class="field-row">
+            <label class="field-sub" for="from">From</label>
+            <select id="from"></select>
+            <label class="field-sub" for="to">To</label>
+            <select id="to"></select>
+          </div>
+        </fieldset>
         <div class="field">
-          <span class="field-label" id="season-l">Season <i>t</i></span>
-          <div class="field-row" role="group" aria-labelledby="season-l">
-            <select id="from" aria-label="First season"></select>
-            <span class="muted">to</span>
-            <select id="to" aria-label="Last season"></select>
-            <button type="button" data-range="2015-2020">All</button>
-            <button type="button" data-range="2015-2017">2015–2017</button>
-            <button type="button" data-range="2018-2020">2018–2020</button>
+          <label for="group">Player type</label>
+          <div class="field-row">
+            <select id="group" aria-describedby="group-note">
+              <option value="all">All players</option>
+              <option value="candidate">Candidates</option>
+              <option value="other">Other non-elite (not candidates)</option>
+              <option value="elite">Elite</option>
+            </select>
+            <span class="field-note" id="group-note" hidden>Clear the players to use this filter</span>
           </div>
         </div>
-        <div class="field">
-          <label for="player">Player</label>
-          <input type="search" id="player" list="player-list" placeholder="Search a player…" autocomplete="off">
+        <div class="field field-players">
+          <label for="player">Players</label>
+          <input type="search" id="player" list="player-list" placeholder="Type a name…" autocomplete="off" aria-describedby="player-help player-hint">
           <datalist id="player-list"></datalist>
+          <span class="field-help" id="player-help">Add up to 8 players to compare their seasons.</span>
+          <p class="hint" id="player-hint" aria-live="polite"></p>
+          <div class="chips-row" id="chips-row" hidden>
+            <ul class="chips" id="chips" aria-label="Selected players"></ul>
+            <button type="button" class="linklike" id="clear-players">Clear players</button>
+          </div>
         </div>
-        <div class="field">
-          <label for="group">Group</label>
-          <select id="group">
-            <option value="all">All players</option>
-            <option value="candidate">Candidates</option>
-            <option value="other">Other non-elite</option>
-            <option value="elite">Elite</option>
-          </select>
-        </div>
+      </div>
+      <div class="filter-row filter-row-2">
+        <div class="filter-group" role="group" aria-labelledby="cand-def-h">
+        <p class="row-heading" id="cand-def-h">Candidate definition</p>
+        <div class="filter-row">
         <div class="field">
           <label for="cutoff">Ball-striking cutoff</label>
-          <select id="cutoff">
+          <select id="cutoff" aria-describedby="cutoff-help strength-note">
             <option value="20">Top 20%</option>
             <option value="15">Top 15%</option>
             <option value="10">Top 10%</option>
             <option value="5">Top 5%</option>
           </select>
+          <span class="field-help" id="cutoff-help">A candidate must rank in this share of the tour for ball-striking</span>
         </div>
         <div class="field">
           <span class="field-label">Putting condition</span>
-          <label class="toggle"><input type="checkbox" id="putting" checked> Below-average putting</label>
+          <label class="toggle"><input type="checkbox" id="putting" checked aria-describedby="putting-help strength-note"> Only players who putted below the tour average</label>
+          <span class="field-help" id="putting-help">Turn off to also count non-elite strong ball-strikers with average or better putting.</span>
         </div>
-        <div class="field">
-          <button type="button" class="btn-reset" id="reset">Reset filters</button>
+        <span class="field-note strength-note" id="strength-note" hidden></span>
         </div>
-      </form>
-      <p class="muted" id="player-hint" style="font-size:.85rem;margin:.3rem 0 0;min-height:1.2em"></p>
-      <p class="status" id="status" aria-live="polite"></p>
+        </div>
+        <button type="button" class="btn-reset" id="reset">Reset filters</button>
+      </div>
+    </form>
 
-      <section id="spotlight-wrap" hidden aria-labelledby="spot-name">
-        <div class="spotlight" id="spotlight"></div>
-      </section>
+    <section id="spotlight-wrap" hidden aria-labelledby="spot-name">
+      <div class="spotlight" id="spotlight"></div>
+    </section>
 
-      <section aria-label="Summary numbers">
-        <div class="cards" id="cards"></div>
-      </section>
+    <section class="dash-top" aria-labelledby="sc-h">
+      <div>
+        <h2 class="sc-heading" id="sc-h">The scorecard</h2>
+        <p class="sc-caption" id="sc-caption"></p>
+        <div class="sc" id="cards"></div>
+        <p class="sc-putting" id="putting-link" hidden><a href="index.html#finding-2">Putting condition is off. Why this changes the rate</a></p>
+        <p class="sc-link"><a href="index.html#defs-h">How elite, candidate, breakout and player-season are defined</a></p>
+      </div>
+      <div>
+        <h2>Breakout rate by player type</h2>
+        <p class="chart-sub">Share elite the next season, by player type in the season measured<span id="f2-scope"></span></p>
+        <div class="chart" id="f2-chart"></div>
+      </div>
+    </section>
 
-      <section aria-label="Charts">
-        <div class="grid-2">
-          <div class="panel">
-            <h3>1. What predicts next season's top-10 rate</h3>
-            <p class="chart-sub">Pearson r of each season-<i>t</i> measure with next season's top-10 rate; <span id="f1-n"></span></p>
+    <section class="dash-charts" aria-label="Charts">
+      <div>
+        <h2>Ball-striking vs. putting</h2>
+        <p class="chart-sub" id="scatter-note">Each dot is one player-season in the current view; 0 = tour average. Click a dot to add that player.</p>
+        <div class="legend legend-light-other" aria-hidden="true">
+          <span><i class="swatch candidate"></i> Candidate</span>
+          <span><i class="swatch other"></i> Other non-elite</span>
+          <span><i class="swatch elite"></i> Elite</span>
+          <span><i class="swatch ring"></i> Became elite next season (breakout)</span>
+        </div>
+        <div class="chart" id="scatter"></div>
+      </div>
+      <div>
+        <h2>Candidates' putting and ball-striking, one season on</h2>
+        <p class="chart-sub">Average strokes gained per round, from the season measured (tee) to the next season (pin); <span id="f3-n"></span><span id="f3-scope"></span></p>
+        <div class="legend" aria-hidden="true">
+          <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#f8f5ec" stroke="#c0392b" stroke-width="2"/></svg> Season measured</span>
+          <span><svg width="12" height="14"><path d="M2.5 1v12" stroke="#1d221f" stroke-width="1.5"/><path d="M3.5 1l7 3L3.5 7z" fill="#c0392b"/></svg> Next season</span>
+        </div>
+        <div class="chart" id="f3-chart"></div>
+      </div>
+    </section>
+
+    <section class="dash-folds" aria-label="More detail">
+      <details class="fold">
+        <summary>What predicts next season, and how the cutoff changes the result</summary>
+        <div class="fold-body more-charts">
+          <div>
+            <h2>What predicts next season's top-10 rate</h2>
+            <p class="chart-sub">Correlation (Pearson r) of each measure in the season measured with the next season's top-10 rate; <span id="f1-n"></span><span id="f1-scope"></span></p>
             <div class="chart" id="f1-chart"></div>
           </div>
-          <div class="panel">
-            <h3>2. Breakout rate by group</h3>
-            <p class="chart-sub">Share elite the next season, by group in season <i>t</i></p>
-            <div class="chart" id="f2-chart"></div>
-          </div>
-          <div class="panel">
-            <h3>3. Candidates' putting and ball-striking, one season on</h3>
-            <p class="chart-sub">Average strokes gained per round, season <i>t</i> (tee) to <i>t+1</i> (pin); <span id="f3-n"></span></p>
-            <div class="legend" aria-hidden="true">
-              <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#fffdf8" stroke="#c8462c" stroke-width="2"/></svg> Season <i>t</i></span>
-              <span><svg width="12" height="14"><path d="M2.5 1v12" stroke="#1f2521" stroke-width="1.5"/><path d="M3.5 1l7 3L3.5 7z" fill="#c8462c"/></svg> Season <i>t+1</i></span>
-            </div>
-            <div class="chart" id="f3-chart"></div>
-          </div>
-          <div class="panel">
-            <h3>4. Breakout rate by ball-striking cutoff</h3>
+          <div>
+            <h2>Breakout rate by ball-striking cutoff</h2>
+            <p class="chart-note">Not affected by Player type or players.</p>
             <p class="chart-sub" id="f4-sub"></p>
             <div class="chart" id="f4-chart"></div>
           </div>
-          <div class="panel full">
-            <h3>Ball-striking vs. putting</h3>
-            <p class="chart-sub">Each dot is one player-season in the current view; 0 = tour average. Click a dot to open that player.</p>
-            <div class="legend" aria-hidden="true">
-              <span><i class="swatch candidate"></i> Candidate</span>
-              <span><i class="swatch other"></i> Other non-elite</span>
-              <span><i class="swatch elite"></i> Elite</span>
-              <span><i class="swatch ring"></i> Became elite next season (breakout)</span>
-            </div>
-            <div class="chart" id="scatter"></div>
-          </div>
         </div>
-      </section>
-
-      <section aria-labelledby="cost-h">
-        <h2 id="cost-h">Cost per breakout: your assumptions</h2>
-        <p class="chart-sub">Enter what one signing costs. Breakout rates come from the current view; the costs are yours, not data.</p>
-        <div class="cost-grid">
-          <div class="cost-inputs">
-            <div class="field">
-              <label for="cost-cand">Cost per candidate signing</label>
-              <div class="money"><span>$</span><input type="number" id="cost-cand" min="0" step="10000" inputmode="numeric"></div>
+      </details>
+      <details class="fold">
+        <summary>Cost per breakout calculator</summary>
+        <div class="fold-body">
+          <p class="chart-sub"><b>Your assumptions:</b> enter what one signing costs. Breakout rates come from the current view; the costs are yours, not data.</p>
+          <div class="cost-grid">
+            <div class="cost-inputs">
+              <div class="field">
+                <label for="cost-cand">Cost per candidate signing</label>
+                <div class="money"><span>$</span><input type="number" id="cost-cand" min="0" step="10000" inputmode="numeric"></div>
+              </div>
+              <div class="field">
+                <label for="cost-other">Cost per non-candidate signing</label>
+                <div class="money"><span>$</span><input type="number" id="cost-other" min="0" step="10000" inputmode="numeric"></div>
+              </div>
             </div>
-            <div class="field">
-              <label for="cost-other">Cost per non-candidate signing</label>
-              <div class="money"><span>$</span><input type="number" id="cost-other" min="0" step="10000" inputmode="numeric"></div>
+            <div>
+              <div class="table-wrap"><table id="cost-table" aria-label="Cost per breakout"></table></div>
+              <p class="verdict" id="cost-verdict"></p>
             </div>
           </div>
-          <div>
-            <div class="table-wrap"><table id="cost-table" aria-label="Cost per breakout"></table></div>
-            <p class="verdict" id="cost-verdict"></p>
+        </div>
+      </details>
+      <details class="fold">
+        <summary>Players behind this view</summary>
+        <div class="fold-body">
+          <p class="chart-sub" id="table-count"></p>
+          <div class="table-wrap table-scroll">
+            <table id="rows-table" aria-label="Player-seasons in the current view"></table>
           </div>
         </div>
-      </section>
-
-      <section aria-labelledby="table-h">
-        <h2 id="table-h">Rows behind this view <span class="muted" id="table-count" style="font-family:var(--font-body);font-size:1rem;font-weight:400"></span></h2>
-        <div class="table-wrap table-scroll">
-          <table id="rows-table" aria-label="Player-seasons in the current view"></table>
-        </div>
-      </section>
-    </div>
+      </details>
+    </section>
   </main>
 
   <footer class="site-foot">

@@ -5,12 +5,16 @@
   const B = window.Breakout, C = window.Charts, F = B.fmt;
   const $ = (id) => document.getElementById(id);
   const COST_DEFAULT = 250000;
+  const MAX_PLAYERS = 8;
   const GROUP_LABEL = { candidate: "Candidate", other: "Other non-elite", elite: "Elite" };
+  // Cards whose players a Player type choice leaves out (the correlation card is not tied to a type).
+  const EXCLUDES = { candidate: ["other", "elite"], other: ["candidate", "elite"], elite: ["candidate", "other"] };
 
   let rows = [];
   let names = [];
-  let state = { ...B.DEFAULTS };
+  let state = { ...B.DEFAULTS, players: [] };
   let sort = { key: "ball_striking", dir: -1 };
+  const closedCards = new Set(); // player cards the reader collapsed
 
   // ---------- controls ----------
   function initControls() {
@@ -21,16 +25,41 @@
     names = [...new Set(rows.map((r) => r.player))].sort();
     $("player-list").innerHTML = names.map((n) => `<option value="${C.esc(n)}"></option>`).join("");
 
-    $("from").addEventListener("change", () => setSeasons(+$("from").value, state.seasonTo));
-    $("to").addEventListener("change", () => setSeasons(state.seasonFrom, +$("to").value));
-    document.querySelectorAll("[data-range]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const [a, z] = b.dataset.range.split("-").map(Number);
-        setSeasons(a, z);
-      })
-    );
-    $("player").addEventListener("input", onPlayerInput);
-    $("player").addEventListener("change", onPlayerInput);
+    // If From ends up later than To (or To earlier than From), move the other end to match.
+    $("from").addEventListener("change", () => {
+      const a = +$("from").value;
+      update({ seasonFrom: a, seasonTo: Math.max(a, state.seasonTo) });
+    });
+    $("to").addEventListener("change", () => {
+      const z = +$("to").value;
+      update({ seasonFrom: Math.min(state.seasonFrom, z), seasonTo: z });
+    });
+
+    // Picking a name from the suggestion list adds it; typing alone does not, so a
+    // name that is the start of another name is never added by accident.
+    $("player").addEventListener("input", (e) => {
+      if (e.inputType && e.inputType !== "insertReplacementText") { $("player-hint").textContent = ""; return; }
+      const match = exactName($("player").value);
+      if (match) addPlayer(match);
+    });
+    $("player").addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const v = $("player").value.trim();
+      if (!v) return;
+      const match = exactName(v);
+      if (match) addPlayer(match);
+      else $("player-hint").textContent = "Pick a name from the list.";
+    });
+    $("chips").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-remove]");
+      if (b) removePlayer(b.dataset.remove);
+    });
+    $("clear-players").addEventListener("click", () => {
+      update({ players: [] });
+      $("player").focus();
+    });
+
     $("group").addEventListener("change", () => update({ group: $("group").value }));
     $("cutoff").addEventListener("change", () => update({ cutoff: +$("cutoff").value }));
     $("putting").addEventListener("change", () => update({ putting: $("putting").checked }));
@@ -39,45 +68,59 @@
     $("cost-other").addEventListener("input", renderCost);
     $("cost-cand").value = COST_DEFAULT;
     $("cost-other").value = COST_DEFAULT;
+    $("spotlight").addEventListener("toggle", (e) => {
+      const d = e.target.closest("details[data-player]");
+      if (!d) return;
+      if (d.open) closedCards.delete(d.dataset.player);
+      else closedCards.add(d.dataset.player);
+    }, true);
   }
 
-  function setSeasons(a, z) {
-    if (a > z) [a, z] = [z, a];
-    update({ seasonFrom: a, seasonTo: z });
-  }
+  // While Player type is Elite or players are selected, the candidate definition rests at the
+  // report's default (top 15%, putting below average). The reader's own cutoff and putting
+  // choices stay in state and come back when that ends.
+  const lockReason = () => (state.players.length ? "players" : state.group === "elite" ? "elite" : null);
+  const eff = () => (lockReason() ? { ...state, cutoff: B.DEFAULTS.cutoff, putting: B.DEFAULTS.putting } : state);
+  const LOCK_NOTE = { players: "Not used while players are selected", elite: "Not used for elite players" };
 
-  function onPlayerInput() {
-    const v = $("player").value.trim();
-    const match = names.find((n) => n.toLowerCase() === v.toLowerCase());
-    if (!v) {
-      $("player-hint").textContent = "";
-      if (state.player) update({ player: "" });
-    } else if (match) {
-      $("player-hint").textContent = "";
-      if (match !== state.player) selectPlayer(match);
-    } else {
-      $("player-hint").textContent = "Pick a name from the list";
-    }
-  }
+  const exactName = (v) => names.find((n) => n.toLowerCase() === v.trim().toLowerCase());
 
-  function selectPlayer(name) {
-    $("player").value = name;
+  function addPlayer(name) {
+    $("player").value = "";
+    if (state.players.includes(name)) { $("player-hint").textContent = `${name} is already added.`; return; }
+    if (state.players.length >= MAX_PLAYERS) { $("player-hint").textContent = `Up to ${MAX_PLAYERS} players.`; return; }
     $("player-hint").textContent = "";
-    update({ player: name });
-    $("spotlight-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+    update({ players: [...state.players, name] });
+  }
+
+  function removePlayer(name) {
+    update({ players: state.players.filter((p) => p !== name) });
+    $("player").focus();
   }
 
   function syncControls() {
+    const picking = state.players.length > 0;
     $("from").value = state.seasonFrom;
     $("to").value = state.seasonTo;
-    $("group").value = state.group;
-    $("putting").checked = state.putting;
-    $("player").value = state.player;
-    $("cutoff").value = String(state.cutoff);
-    document.querySelectorAll("[data-range]").forEach((b) => {
-      const [a, z] = b.dataset.range.split("-").map(Number);
-      b.setAttribute("aria-pressed", String(a === state.seasonFrom && z === state.seasonTo));
-    });
+    $("group").value = state.group; // kept while players are selected, so it comes back when they are cleared
+    $("group").disabled = picking;
+    $("group-note").hidden = !picking;
+    const why = lockReason();
+    const e = eff();
+    $("putting").checked = e.putting;
+    $("cutoff").value = String(e.cutoff);
+    $("cutoff").disabled = !!why;
+    $("putting").disabled = !!why;
+    $("putting").closest(".toggle").classList.toggle("is-disabled", !!why);
+    $("strength-note").hidden = !why;
+    $("strength-note").textContent = why ? LOCK_NOTE[why] : "";
+    const full = state.players.length >= MAX_PLAYERS;
+    $("player").disabled = full;
+    $("player").placeholder = full ? `Up to ${MAX_PLAYERS} players` : "Type a name…";
+    $("chips-row").hidden = !picking;
+    $("chips").innerHTML = state.players
+      .map((p) => `<li class="chip"><span>${C.esc(p)}</span><button type="button" data-remove="${C.esc(p)}" aria-label="Remove ${C.esc(p)}">×</button></li>`)
+      .join("");
   }
 
   function update(patch) {
@@ -87,110 +130,125 @@
   }
 
   function reset() {
-    state = { ...B.DEFAULTS };
+    state = { ...B.DEFAULTS, players: [] };
     sort = { key: "ball_striking", dir: -1 };
+    closedCards.clear();
     $("cost-cand").value = COST_DEFAULT;
     $("cost-other").value = COST_DEFAULT;
+    $("player").value = "";
     $("player-hint").textContent = "";
     syncControls();
     render();
   }
 
-  const isDefault = () => Object.keys(B.DEFAULTS).every((k) => state[k] === B.DEFAULTS[k]);
-
   // ---------- render ----------
   let view = null;
 
   function render() {
-    const filtered = B.filterRows(rows, state);
-    const s = B.summary(filtered, state);
+    const e = eff();
+    const filtered = B.filterRows(rows, e);
+    const s = B.summary(filtered, e);
     view = { filtered, s };
 
-    renderStatus(filtered);
+    const excluded = new Set(state.players.length || state.group === "all" ? [] : EXCLUDES[state.group]);
     renderSpotlight();
-    C.scoreCards($("cards"), s, B.MIN_GROUP);
+    C.scoreCards($("cards"), s, B.MIN_GROUP, excluded);
+    // The putting condition changes who counts as a candidate; point to the report's explanation.
+    $("putting-link").hidden = !(!state.putting && !lockReason());
+    const span = state.seasonFrom === state.seasonTo ? `Season ${state.seasonFrom}` : `Seasons ${state.seasonFrom}–${state.seasonTo}`;
+    $("sc-caption").textContent = `${span}, ${F.int(filtered.length)} player-seasons. Each rate shows its count, because the groups are small.`;
     renderCharts(filtered, s);
     renderCost();
     renderTable(filtered);
   }
 
-  function renderStatus(filtered) {
-    const seasons = state.seasonFrom === state.seasonTo ? `season ${state.seasonFrom}` : `seasons ${state.seasonFrom}–${state.seasonTo}`;
-    const group = state.group === "all" ? "all groups" : GROUP_LABEL[state.group].toLowerCase() + (state.group === "elite" ? "" : "s");
-    const parts = [
-      `<b>${F.int(filtered.length)}</b> player-seasons`,
-      seasons,
-      state.player ? C.esc(state.player) : "all players",
-      group,
-      `top ${state.cutoff}% ball-striking`,
-      state.putting ? "putting below average" : "putting condition off",
-    ];
-    $("status").innerHTML =
-      "Showing " + parts.join(" · ") + ". " +
-      (isDefault() ? "<b>Default view: the cards match the report.</b>" : "Press Reset to return to the report's defaults.");
-  }
-
+  // Findings 1-4 recomputed from the filtered rows, plus the scatter.
+  // The fifth finding needs a fixed 2015-2019 window, so it stays on the report.
   function renderCharts(filtered, s) {
     const min = B.MIN_GROUP;
+    const e = eff();
+    // Each subtitle ends with the scope of the rows that chart uses.
+    const span = state.seasonFrom === state.seasonTo ? `season ${state.seasonFrom}` : `seasons ${state.seasonFrom}–${state.seasonTo}`;
+    const scope = (n) => ` · ${span} · ${F.int(n)} player-seasons`;
+    const bar = (label, sub, st, cls) => ({
+      label, sub, value: st.rate, display: F.pct(st.rate), of: F.of(st), cls, n: st.n, tooFew: st.n < min,
+    });
+
+    C.bars($("f2-chart"), [
+      bar("Candidates", "became elite", s.candidate, "candidate"),
+      bar("Other non-elite", "became elite", s.other, "other"),
+      bar("Elite", "stayed elite", s.elite, "elite"),
+    ], { room: 0.55, aria: "Share elite the next season by player type" });
+    $("f2-scope").textContent = scope(filtered.length); // scaled to the largest bar; room leaves space for its label
 
     const f1 = B.categoryCorrelations(filtered);
     $("f1-n").textContent = `${F.int(f1.n)} player-seasons with a qualified next season`;
+    $("f1-scope").textContent = scope(filtered.length);
     C.bars($("f1-chart"), f1.items.map((i) => ({
       label: i.label, value: i.r, display: "r = " + F.r(i.r), cls: "neutral", n: f1.n,
       tooFew: f1.n < min || i.r === null,
       selected: i.key === "ball_striking" || i.key === "sg_putt",
     })), { max: 1, room: 0.85, aria: "Correlation with next season's top-10 rate" });
 
-    const bar = (label, sub, st, cls) => ({
-      label, sub, value: st.rate, display: F.pct(st.rate), of: F.of(st), cls, n: st.n, tooFew: st.n < min,
-    });
-    C.bars($("f2-chart"), [
-      bar("Candidates", "became elite", s.candidate, "candidate"),
-      bar("Other non-elite", "became elite", s.other, "other"),
-      bar("Elite", "stayed elite", s.elite, "elite"),
-    ], { max: 1, room: 0.8, aria: "Share elite the next season by group" });
+    // The cutoff chart compares cutoffs across everyone in the chosen seasons, so it ignores
+    // Player type and selected players and follows only the seasons and the putting condition.
+    const seasonRows = rows.filter((r) => r.season >= state.seasonFrom && r.season <= state.seasonTo);
+    const f4 = B.cutoffRates(seasonRows, e.putting);
+    const f4Other = B.summary(seasonRows, { ...e, group: "all", players: [] }).other;
+    $("f4-sub").textContent =
+      `Non-elite players above each cutoff${e.putting ? " who putted below the tour average" : ""}. Grey bar: other non-elite players at the selected top-${e.cutoff}% cutoff${scope(seasonRows.length)}.`;
+    C.bars($("f4-chart"), [
+      ...f4.map((c) => ({
+        label: `Top ${c.cutoff}%`, sub: c.cutoff === e.cutoff ? "selected" : "", value: c.rate, display: F.pct(c.rate),
+        of: F.of(c), cls: "candidate", n: c.n, tooFew: c.n < min, selected: c.cutoff === e.cutoff,
+      })),
+      bar("Other non-elite", `top-${e.cutoff}% definition`, f4Other, "other"),
+    ], { max: 1, room: 0.8, aria: "Candidate breakout rate by ball-striking cutoff" });
 
-    const f3 = B.candidateMovement(filtered, state);
+    const f3 = B.candidateMovement(filtered, e);
     $("f3-n").textContent = `${f3.n} candidates with a qualified next season`;
+    $("f3-scope").textContent = scope(filtered.length);
     if (f3.n < min) {
-      $("f3-chart").innerHTML = `<p class="muted">Too few players: ${f3.n} candidates with a qualified next season (needs ${min}+).</p>`;
+      $("f3-chart").innerHTML = `<p class="muted">${C.onlyN(f3.n, "candidate", min)}</p>`;
     } else {
       C.hole($("f3-chart"), [
         { label: "Putting", from: f3.putt.from, to: f3.putt.to },
         { label: "Ball-striking", from: f3.bs.from, to: f3.bs.to },
-      ], { aria: "Candidates' putting and ball-striking, season t to t+1" });
+      ], { aria: "Candidates' putting and ball-striking, from the season measured to the next season" });
     }
 
-    const f4 = B.cutoffRates(filtered, state.putting);
-    $("f4-sub").textContent =
-      `Non-elite players above each cutoff${state.putting ? " with below-average putting" : ""}. Grey bar: other non-elite players at the selected top-${state.cutoff}% cutoff.`;
-    C.bars($("f4-chart"), [
-      ...f4.map((c) => ({
-        label: `Top ${c.cutoff}%`, sub: c.cutoff === state.cutoff ? "selected" : "", value: c.rate, display: F.pct(c.rate),
-        of: F.of(c), cls: "candidate", n: c.n, tooFew: c.n < min, selected: c.cutoff === state.cutoff,
-      })),
-      bar("Other non-elite", `top-${state.cutoff}% definition`, s.other, "other"),
-    ], { max: 1, room: 0.8, aria: "Candidate breakout rate by ball-striking cutoff" });
-
-    C.scatter($("scatter"), filtered.map((r) => {
-      const g = B.groupOf(r, state);
-      const mine = state.player && r.player === state.player;
+    // With players selected, everyone in the chosen seasons stays on the scatter as faded
+    // context and the selected players' dots are circled.
+    const picking = state.players.length > 0;
+    const scatterRows = picking ? rows.filter((r) => r.season >= state.seasonFrom && r.season <= state.seasonTo) : filtered;
+    const mine = (r) => picking && state.players.includes(r.player);
+    // Label each selected player once, at their latest season in view, so labels don't pile up.
+    const latest = new Map();
+    scatterRows.filter(mine).forEach((r) => latest.set(r.player, Math.max(latest.get(r.player) || 0, r.season)));
+    $("scatter-note").textContent = (picking
+      ? "Green rings: the players you added, each named at their latest season. Other dots show everyone in the chosen seasons, for context"
+      : "Each dot is one player-season in the current view; 0 = tour average. Click a dot to add that player") + scope(scatterRows.length) + ".";
+    C.scatter($("scatter"), scatterRows.map((r) => {
+      const g = B.groupOf(r, e);
       return {
-        x: r.ball_striking, y: r.sg_putt, cls: g, top: mine, focus: mine,
-        ring: r.elite === 0 && r.elite_next === 1,
-        label: mine ? String(r.season) : null,
+        x: r.ball_striking, y: r.sg_putt, cls: g, top: mine(r), select: mine(r), faded: picking && !mine(r),
+        ring: r.elite === 0 && r.elite_next === 1 && (!picking || mine(r)),
+        label: mine(r) && latest.get(r.player) === r.season ? shortName(r.player) : null,
         player: r.player,
         tip: `<b>${C.esc(r.player)}</b> · ${r.season}<br>${GROUP_LABEL[g]}<br>Ball-striking ${F.sg(r.ball_striking)} · putting ${F.sg(r.sg_putt)}<br>` +
           `Top 10s: ${r.top10s} of ${r.starts} (${F.pct(r.top10_rate)})<br>Elite next season: ${nextLabel(r)}`,
       };
     }), {
-      labels: !!state.player,
+      labels: picking,
+      otherR: 3,
       xLabel: "Ball-striking (strokes gained per round)",
       yLabel: "Putting (strokes gained per round)",
       aria: "Ball-striking vs putting for the current view",
-      onClick: (p) => { if (p.player !== state.player) selectPlayer(p.player); },
+      onClick: (p) => { if (!state.players.includes(p.player)) addPlayer(p.player); },
     });
   }
+
+  const shortName = (name) => name.split(" ").slice(1).join(" ") || name;
 
   function nextLabel(r) {
     if (r.elite_next === null) return "not in data";
@@ -198,40 +256,27 @@
     return r.next_qualified === 0 ? "no (no qualified season)" : "no";
   }
 
-  // ---------- player spotlight ----------
+  // ---------- player cards: one compact, collapsible card per selected player ----------
   function renderSpotlight() {
     const wrap = $("spotlight-wrap");
-    if (!state.player) { wrap.hidden = true; return; }
+    if (!state.players.length) { wrap.hidden = true; $("spotlight").innerHTML = ""; return; }
     wrap.hidden = false;
-    const hist = rows.filter((r) => r.player === state.player).sort((a, b) => a.season - b.season);
-    const opts = state;
-    const el = $("spotlight");
-    const seasonsTxt = hist.length === 1 ? "1 qualified season" : `${hist.length} qualified seasons`;
-    el.innerHTML =
-      `<div class="spotlight-head"><div><h3 id="spot-name">${C.esc(state.player)}</h3>` +
-      `<p class="muted" style="margin:0">${seasonsTxt}, 2015–2021. Groups use the current cutoff and putting setting.</p></div>` +
-      `<button type="button" id="spot-close">Clear player</button></div>` +
-      `<p class="chart-title">Top-10 rate by season</p><p class="chart-sub">Dashed line: elite threshold (30%). Red dots: candidate seasons.</p>` +
-      `<div class="chart" id="spot-chart"></div>` +
-      `<div class="table-wrap" style="margin-top:.8rem"><table><thead><tr><th>Season</th><th>Group</th><th class="n">Starts</th><th class="n">Top 10s</th>` +
-      `<th class="n">Top-10 rate</th><th class="n">Ball-striking</th><th class="n">BS pct</th><th class="n">Putting</th><th>Elite next season</th></tr></thead><tbody>` +
-      hist.map((r) => {
-        const g = B.groupOf(r, opts);
-        return `<tr><td>${r.season}${r.season === B.WATCH_SEASON ? " <span class='tag plain'>(watch list year)</span>" : ""}</td>` +
-          `<td><span class="tag ${g}">${GROUP_LABEL[g]}</span></td><td class="n">${r.starts}</td><td class="n">${r.top10s}</td>` +
-          `<td class="n">${F.pct(r.top10_rate)}</td><td class="n">${F.sg(r.ball_striking)}</td><td class="n">${F.pct(r.bs_pct, 0)}</td>` +
-          `<td class="n">${F.sg(r.sg_putt)}</td><td>${nextLabel(r)}</td></tr>`;
-      }).join("") +
-      `</tbody></table></div>`;
-    $("spot-close").addEventListener("click", () => update({ player: "" }));
-    C.miniLine($("spot-chart"), hist.map((r) => {
-      const g = B.groupOf(r, opts);
-      return {
-        x: r.season, y: r.top10_rate,
-        cls: g === "candidate" ? "is-candidate" : g === "elite" ? "is-elite" : "",
-        tip: `<b>${r.season}</b><br>Top-10 rate ${F.pct(r.top10_rate)} (${r.top10s} of ${r.starts})<br>${GROUP_LABEL[g]}`,
-      };
-    }), { threshold: 0.3, domain: [B.SUMMARY_FIRST, B.WATCH_SEASON], aria: `Top-10 rate by season for ${state.player}` });
+    $("spotlight").innerHTML = state.players.map((name) => {
+      const hist = rows.filter((r) => r.player === name).sort((a, b) => a.season - b.season);
+      const seasonsTxt = hist.length === 1 ? "1 qualified season" : `${hist.length} qualified seasons`;
+      const body = hist.map((r) => {
+        const g = B.groupOf(r, eff());
+        const out = r.season < state.seasonFrom || r.season > state.seasonTo;
+        return `<tr class="${out ? "out" : ""}"><td>${r.season}${r.season === B.WATCH_SEASON ? " <span class='tag plain'>(watch list year)</span>" : ""}</td>` +
+          `<td><span class="tag ${g}">${GROUP_LABEL[g]}</span></td><td class="n">${F.sg(r.ball_striking)}</td><td class="n">${F.sg(r.sg_putt)}</td>` +
+          `<td class="n">${F.pct(r.top10_rate)}</td><td>${nextLabel(r)}</td></tr>`;
+      }).join("");
+      return `<details class="spot" data-player="${C.esc(name)}"${closedCards.has(name) ? "" : " open"}>` +
+        `<summary><span class="spot-name">${C.esc(name)}</span> <span class="muted">${seasonsTxt}, 2015–2021</span></summary>` +
+        `<div class="table-wrap"><table><thead><tr><th>Season</th><th>Player type</th><th class="n">Ball-striking</th><th class="n">Putting</th>` +
+        `<th class="n">Top-10 rate</th><th>Elite next season</th></tr></thead><tbody>${body}</tbody></table></div></details>`;
+    }).join("") +
+      `<p class="spot-foot muted">Player types use the current cutoff and putting setting. Grey rows fall outside the chosen seasons.</p>`;
   }
 
   // ---------- cost tool ----------
@@ -242,18 +287,25 @@
     const { s } = view;
     const cc = Math.max(+$("cost-cand").value || 0, 0);
     const co = Math.max(+$("cost-other").value || 0, 0);
-    const line = (name, st, cost) => {
-      const ok = st.n >= B.MIN_GROUP && st.rate > 0;
-      return `<tr><td>${name}</td><td class="n">${st.n < B.MIN_GROUP ? `too few (${st.n})` : `${F.pct(st.rate)} <span class="muted">· ${F.of(st)}</span>`}</td>` +
-        `<td class="n">${ok ? F.x1(1 / st.rate) : "–"}</td><td class="n">${money(cost)}</td><td class="n">${ok ? money(cost / st.rate) : "–"}</td></tr>`;
+    const computable = (st) => st.n >= B.MIN_GROUP && st.rate > 0;
+    // The cheaper route gets bold green; the sentence below the table says the same in words.
+    const both = computable(s.candidate) && computable(s.other) && cc > 0 && co > 0;
+    const perCand = both ? cc / s.candidate.rate : null, perOther = both ? co / s.other.rate : null;
+    const cheaper = both && perCand !== perOther ? (perCand < perOther ? "candidate" : "other") : null;
+    const line = (name, key, st, cost) => {
+      const ok = computable(st);
+      const perBreakout = ok ? money(cost / st.rate) : "–";
+      return `<tr><td>${name}</td><td class="n">${st.n < B.MIN_GROUP ? C.onlyN(st.n, "player-season", B.MIN_GROUP) : F.pct(st.rate)}</td>` +
+        `<td class="n">${ok ? F.x1(1 / st.rate) : "–"}</td><td class="n">${money(cost)}</td>` +
+        `<td class="n">${cheaper === key ? `<b class="cheaper">${perBreakout}</b>` : perBreakout}</td></tr>`;
     };
     $("cost-table").innerHTML =
-      `<thead><tr><th>Group</th><th class="n">Breakout rate</th><th class="n">Signings per breakout</th><th class="n">Cost per signing</th><th class="n">Cost per breakout</th></tr></thead><tbody>` +
-      line("Candidates", s.candidate, cc) + line("Other non-elite", s.other, co) + `</tbody>`;
+      `<thead><tr><th>Player type</th><th class="n">Breakout rate</th><th class="n">Signings per breakout</th><th class="n">Cost per signing</th><th class="n">Cost per breakout</th></tr></thead><tbody>` +
+      line("Candidates", "candidate", s.candidate, cc) + line("Other non-elite", "other", s.other, co) + `</tbody>`;
 
     const ok = s.candidate.n >= B.MIN_GROUP && s.other.n >= B.MIN_GROUP && s.candidate.rate > 0 && s.other.rate > 0;
     if (!ok) {
-      $("cost-verdict").textContent = "This view has too few players or no breakouts in a group, so cost per breakout and the break-even ratio can't be computed.";
+      $("cost-verdict").textContent = "A group in this view has fewer than 10 player-seasons or no breakouts, so cost per breakout and the break-even ratio can't be computed.";
       return;
     }
     const be = s.breakEven;
@@ -274,7 +326,7 @@
   const COLS = [
     { key: "player", label: "Player" },
     { key: "season", label: "Season", n: true },
-    { key: "group", label: "Group" },
+    { key: "group", label: "Player type" },
     { key: "ball_striking", label: "Ball-striking", n: true },
     { key: "bs_pct", label: "BS pct", n: true },
     { key: "sg_putt", label: "Putting", n: true },
@@ -283,7 +335,8 @@
   ];
 
   function renderTable(filtered) {
-    const val = (r, k) => (k === "group" ? GROUP_LABEL[B.groupOf(r, state)] : r[k]);
+    const e = eff();
+    const val = (r, k) => (k === "group" ? GROUP_LABEL[B.groupOf(r, e)] : r[k]);
     const sorted = filtered.slice().sort((a, b) => {
       const x = val(a, sort.key), y = val(b, sort.key);
       if (x === y) return a.player.localeCompare(b.player) || a.season - b.season;
@@ -291,7 +344,7 @@
       if (y === null) return -1;
       return (x < y ? -1 : 1) * sort.dir;
     });
-    $("table-count").textContent = `· ${F.int(filtered.length)} rows`;
+    $("table-count").textContent = `${F.int(filtered.length)} player-seasons in this view.`;
     $("rows-table").innerHTML =
       `<thead><tr>${COLS.map((c) => {
         const on = sort.key === c.key;
@@ -299,7 +352,7 @@
         return `<th class="sortable${c.n ? " n" : ""}" data-key="${c.key}" tabindex="0" aria-sort="${on ? (sort.dir > 0 ? "ascending" : "descending") : "none"}">${c.label} <span class="arrow">${arrow}</span></th>`;
       }).join("")}</tr></thead><tbody>` +
       sorted.map((r) => {
-        const g = B.groupOf(r, state);
+        const g = B.groupOf(r, e);
         return `<tr><td><button type="button" class="linklike" data-player="${C.esc(r.player)}">${C.esc(r.player)}</button></td>` +
           `<td class="n">${r.season}</td><td><span class="tag ${g}">${GROUP_LABEL[g]}</span></td>` +
           `<td class="n">${F.sg(r.ball_striking)}</td><td class="n">${F.pct(r.bs_pct, 0)}</td><td class="n">${F.sg(r.sg_putt)}</td>` +
@@ -317,7 +370,7 @@
       const th = e.target.closest("th[data-key]");
       if (th) return resort(th.dataset.key);
       const b = e.target.closest("button[data-player]");
-      if (b) selectPlayer(b.dataset.player);
+      if (b && !state.players.includes(b.dataset.player)) addPlayer(b.dataset.player);
     });
     t.addEventListener("keydown", (e) => {
       const th = e.target.closest("th[data-key]");

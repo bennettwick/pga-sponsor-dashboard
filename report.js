@@ -21,11 +21,15 @@
     const f3 = B.candidateMovement(base, opts);
     const f4 = B.cutoffRates(base, true);
     const f5 = B.persistence(rows);
+    const split = B.puttingSplit(base, opts.cutoff); // strong ball-strikers by putting, same seasons and cutoff
+    // the same summary for the two halves of the period
+    const periodOf = (a, z) => B.summary(B.filterRows(rows, { ...opts, seasonFrom: a, seasonTo: z }), opts);
+    const periods = { early: periodOf(2015, 2017), late: periodOf(2018, 2020) };
     const watch = B.watchList(rows);
     const perSeason = {};
     rows.forEach((r) => (perSeason[r.season] = (perSeason[r.season] || 0) + 1));
     const counts = Object.values(perSeason);
-    return { opts, base, s, f1, f3, f4, f5, watch, perSeason, counts };
+    return { opts, base, s, f1, f3, f4, f5, split, periods, watch, perSeason, counts };
   }
 
   function values(d) {
@@ -47,6 +51,13 @@
       "f5.b.hits": f5.breakouts.hits, "f5.b.n": f5.breakouts.n, "f5.b.rate": F.pct(f5.breakouts.rate),
       "f5.r.hits": f5.repeat.hits, "f5.r.n": f5.repeat.n, "f5.r.rate": F.pct(f5.repeat.rate),
       "watch.n": d.watch.length,
+      "f2.warm.rate": F.pct(d.split.warm.rate), "f2.warm.of": F.of(d.split.warm),
+      "off.cand.rate": F.pct(d.split.all.rate), "off.cand.of": F.of(d.split.all),
+      "per.early.cand.of": F.of(d.periods.early.candidate), "per.late.cand.of": F.of(d.periods.late.candidate),
+      "per.early.other.of": F.of(d.periods.early.other), "per.late.other.of": F.of(d.periods.late.other),
+      "per.late.cand.hitsWord": word(d.periods.late.candidate.hits, true), "cand.hitsWord": word(s.candidate.hits),
+      "split.warm.top10": F.pct(d.split.warm.top10), "split.cold.top10": F.pct(d.split.cold.top10),
+      "split.warm.next": F.pct(d.split.warm.nextTop10), "split.cold.next": F.pct(d.split.cold.nextTop10),
       "qual.total": F.int(rows.length),
       "qual.range": `${Math.min(...d.counts)}–${Math.max(...d.counts)}`,
       "qual.seasons": Object.keys(d.perSeason).sort().map((k) => `${k}: ${d.perSeason[k]}`).join(", "),
@@ -58,6 +69,12 @@
       v[`f4.${c.cutoff}.n`] = c.n;
     });
     return v;
+  }
+
+  // Small counts read better as words in a sentence ("Seven of the eight").
+  function word(n, capital) {
+    const w = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"][n] ?? String(n);
+    return capital ? w[0].toUpperCase() + w.slice(1) : w;
   }
 
   function draw(d) {
@@ -100,17 +117,18 @@
 
   function drawWatch(d) {
     const season = rows.filter((r) => r.season === B.WATCH_SEASON);
-    const names = new Set(d.watch.map((r) => r.player));
+    // Label each candidate dot with its number in the leaderboard table.
+    const rank = new Map(d.watch.map((r, i) => [r.player, i + 1]));
     C.scatter(document.getElementById("watch-chart"),
       season.map((r) => {
         const g = B.groupOf(r, d.opts);
         return {
           x: r.ball_striking, y: r.sg_putt, cls: g, faded: g !== "candidate",
-          label: names.has(r.player) ? lastName(r.player) : null,
+          label: rank.has(r.player) ? String(rank.get(r.player)) : null,
           tip: `<b>${C.esc(r.player)}</b> · 2021<br>Ball-striking ${F.sg(r.ball_striking)} · putting ${F.sg(r.sg_putt)}<br>Top 10s: ${r.top10s} of ${r.starts} (${F.pct(r.top10_rate)})`,
         };
       }),
-      { labels: true, height: window.innerWidth < 560 ? 400 : 480, xLabel: "Ball-striking (strokes gained per round)", yLabel: "Putting (strokes gained per round)", aria: "2021 ball-striking vs putting with candidates labeled" });
+      { labels: true, height: window.innerWidth < 560 ? 400 : 480, xLabel: "Better ball-striking →", yLabel: "↑ Better putting", yLabelTop: true, aria: "2021 ball-striking vs putting, candidates labeled by their table number" });
 
     document.getElementById("watch-table").innerHTML =
       `<thead><tr><th>No.</th><th>Player</th><th class="n">Ball-striking</th><th class="n">BS percentile</th><th class="n">Putting</th><th class="n">Top 10s</th><th class="n">Top-10 rate</th></tr></thead><tbody>` +
@@ -120,11 +138,6 @@
       ).join("") + `</tbody>`;
   }
 
-  // Short labels for the scatter; keep "Jr." style suffixes readable.
-  function lastName(name) {
-    const parts = name.split(" ");
-    return parts.length > 1 ? parts.slice(1).join(" ") : name;
-  }
 
   let data = null, lastW = 0;
   window.addEventListener("resize", () => {
@@ -140,7 +153,10 @@
       rows = B.parseCSV(t);
       data = compute();
       lastW = window.innerWidth;
-      fill(values(data));
+      const v = values(data);
+      fill(v);
+      document.getElementById("focal").setAttribute("aria-label",
+        `Candidates became elite the next season ${v.ratio} times as often as other non-elite players`);
       draw(data);
     })
     .catch((e) => {

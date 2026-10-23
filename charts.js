@@ -29,6 +29,8 @@
   function hideTip() { if (tipEl) tipEl.classList.remove("show"); }
 
   // ---------- helpers ----------
+  // The one small-group message used everywhere: "Only 7 player-seasons (needs 10+)".
+  const onlyN = (n, unit, min) => `Only ${n} ${unit}${n === 1 ? "" : "s"} (needs ${min}+)`;
   function svgEl(tag, attrs, parent) {
     const e = document.createElementNS(NS, tag);
     for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
@@ -55,7 +57,8 @@
   const width = (el) => Math.max(el.clientWidth || 0, 280);
 
   // ---------- bars (HTML) ----------
-  // items: {label, sub, value (0..), display, of, cls, tooFew, selected}
+  // items: {label, sub, value (0..), display, of, cls, n, tooFew, selected}; tooFew bars show
+  // "Only N player-seasons (needs 10+)" in place of a rate
   function bars(el, items, opts = {}) {
     const max = opts.max ?? Math.max(...items.map((i) => (i.tooFew ? 0 : i.value || 0)), 1e-9);
     const room = opts.room ?? 0.72; // longest bar takes this share of the track, leaving space for its label
@@ -65,7 +68,7 @@
         .map((i) => {
           const w = i.tooFew || i.value === null ? 0 : Math.max((i.value / max) * room * 100, 0.4);
           const val = i.tooFew
-            ? `<span class="of">too few players (${i.n})</span>`
+            ? `<span class="of">${onlyN(i.n, "player-season", opts.min ?? 10)}</span>`
             : `<b>${esc(i.display)}</b>${i.of ? ` <span class="of">· ${esc(i.of)}</span>` : ""}`;
           return (
             `<div class="bar-label${i.selected ? " bar-row-selected" : ""}" role="listitem">${esc(i.label)}` +
@@ -90,7 +93,7 @@
     const svg = svgEl("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria || "" }, el);
     const vals = rows.flatMap((r) => [r.from, r.to]).filter((v) => v !== null);
     if (!vals.length) {
-      text(svg, W / 2, H / 2, "Too few players in this view", { "text-anchor": "middle", class: "axis-label" });
+      text(svg, W / 2, H / 2, "No player-seasons in this view", { "text-anchor": "middle", class: "axis-label" });
       return;
     }
     const lo = Math.min(-0.4, ...vals) - 0.1;
@@ -126,7 +129,7 @@
       text(svg, x0 + (fromLeft ? -10 : 10), cy + 4, sgTick2(r.from), { "text-anchor": fromLeft ? "end" : "start", class: "val-label" });
       text(svg, x1 + (fromLeft ? 10 : -10), cy + 18, sgTick2(r.to), { "text-anchor": fromLeft ? "start" : "end", class: "val-label" });
       const hit = svgEl("rect", { x: left, y: cy - 34, width: right - left, height: 50, fill: "transparent", tabindex: 0 }, svg);
-      const html = `<b>${esc(r.label)}</b><br>Season t: ${sgTick2(r.from)}<br>Next season: ${sgTick2(r.to)}`;
+      const html = `<b>${esc(r.label)}</b><br>Season measured: ${sgTick2(r.from)}<br>Next season: ${sgTick2(r.to)}`;
       bindTip(hit, html);
     });
   }
@@ -150,10 +153,10 @@
     const W = width(el);
     const narrow = W < 520;
     const H = opts.height || (narrow ? 340 : 420);
-    const m = { top: 16, right: 18, bottom: 46, left: 52 };
+    const m = { top: opts.yLabelTop ? 30 : 16, right: 18, bottom: 46, left: opts.yLabelTop ? 40 : 52 };
     const svg = svgEl("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria || "" }, el);
     if (!pts.length) {
-      text(svg, W / 2, H / 2, "No players in this view", { "text-anchor": "middle", class: "axis-label" });
+      text(svg, W / 2, H / 2, "No player-seasons in this view", { "text-anchor": "middle", class: "axis-label" });
       return;
     }
     const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
@@ -171,17 +174,19 @@
       text(svg, m.left - 7, y(t) + 4, sgTick(t), { "text-anchor": "end", class: "tick-label" });
     });
     text(svg, (m.left + W - m.right) / 2, H - 8, opts.xLabel || "", { "text-anchor": "middle", class: "axis-label" });
-    text(svg, 0, 0, opts.yLabel || "", { transform: `translate(13 ${(m.top + H - m.bottom) / 2}) rotate(-90)`, "text-anchor": "middle", class: "axis-label" });
+    if (opts.yLabelTop) text(svg, m.left, 14, opts.yLabel || "", { "text-anchor": "start", class: "axis-label" });
+    else text(svg, 0, 0, opts.yLabel || "", { transform: `translate(13 ${(m.top + H - m.bottom) / 2}) rotate(-90)`, "text-anchor": "middle", class: "axis-label" });
 
     const order = { other: 0, elite: 1, candidate: 2 };
     const sorted = pts.slice().sort((a, b) => (order[a.cls] - order[b.cls]) || ((a.top ? 1 : 0) - (b.top ? 1 : 0)));
     const placed = [];
     sorted.forEach((p) => {
       p.px = x(p.x); p.py = y(p.y);
-      const r = p.cls === "candidate" || p.top ? 5 : 4;
+      const r = p.cls === "candidate" || p.top ? 5 : p.cls === "other" && opts.otherR ? opts.otherR : 4;
       svgEl("circle", { cx: p.px, cy: p.py, r, class: `pt ${p.cls}${p.faded ? " faded" : ""}` }, svg);
       if (p.ring) svgEl("circle", { cx: p.px, cy: p.py, r: r + 4, class: "pt-ring" }, svg);
       if (p.focus) svgEl("circle", { cx: p.px, cy: p.py, r: r + 7, class: "pt-focus" }, svg);
+      if (p.select) svgEl("circle", { cx: p.px, cy: p.py, r: r + 4, class: "pt-select" }, svg);
       placed.push({ x: p.px - r - 1, y: p.py - r - 1, w: 2 * r + 2, h: 2 * r + 2 });
     });
 
@@ -245,69 +250,41 @@
     });
   }
 
-  // ---------- small line chart (player history: top-10 rate by season) ----------
-  // pts: {x (season), y (rate), cls, tip}; opts.threshold
-  function miniLine(el, pts, opts = {}) {
-    el.innerHTML = "";
-    const W = width(el), H = 190;
-    const m = { top: 14, right: 16, bottom: 30, left: 42 };
-    const svg = svgEl("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria || "" }, el);
-    const xs = opts.domain || [Math.min(...pts.map((p) => p.x)), Math.max(...pts.map((p) => p.x))];
-    const yMax = Math.max(0.5, ...pts.map((p) => p.y)) * 1.1;
-    const x = scale(xs[0] - 0.4, xs[1] + 0.4, m.left, W - m.right);
-    const y = scale(0, yMax, H - m.bottom, m.top);
-    niceTicks(0, yMax, 4).forEach((t) => {
-      svgEl("line", { x1: m.left, x2: W - m.right, y1: y(t), y2: y(t), class: "grid-line" }, svg);
-      text(svg, m.left - 6, y(t) + 4, Math.round(t * 100) + "%", { "text-anchor": "end", class: "tick-label" });
-    });
-    for (let s = xs[0]; s <= xs[1]; s++) text(svg, x(s), H - 10, String(s), { "text-anchor": "middle", class: "tick-label" });
-    if (opts.threshold !== undefined) {
-      svgEl("line", { x1: m.left, x2: W - m.right, y1: y(opts.threshold), y2: y(opts.threshold), class: "threshold" }, svg);
-      text(svg, W - m.right, y(opts.threshold) - 5, "elite: 30%", { "text-anchor": "end", class: "axis-label" });
-    }
-    // break the line where a season is missing
-    let seg = [];
-    const flush = () => { if (seg.length > 1) svgEl("polyline", { points: seg.join(" "), class: "mini-line" }, svg); seg = []; };
-    pts.forEach((p, i) => {
-      if (i && p.x !== pts[i - 1].x + 1) flush();
-      seg.push(`${x(p.x)},${y(p.y)}`);
-    });
-    flush();
-    pts.forEach((p) => {
-      const c = svgEl("circle", { cx: x(p.x), cy: y(p.y), r: 5, class: `mini-dot ${p.cls || ""}`, tabindex: 0 }, svg);
-      bindTip(c, p.tip);
-    });
-  }
-
   // ---------- the four summary numbers as scorecard tiles ----------
-  // s: result of Breakout.summary(); minGroup: below this, show the count and a note instead of a rate
-  function scoreCards(el, s, minGroup) {
+  // Laid out like a golf scorecard row: a header column, then one column per number.
+  // s: result of Breakout.summary(); minGroup: below this, show "Only N player-seasons (needs 10+)" instead of a rate;
+  // excluded: card keys whose players the Player type filter leaves out
+  function scoreCards(el, s, minGroup, excluded = new Set()) {
     const pct = (x) => (x * 100).toFixed(1) + "%";
     const cards = [
-      { label: "Candidate breakout rate", stat: s.candidate, note: "Candidates elite the next season", cls: "is-candidate" },
-      { label: "Other non-elite breakout rate", stat: s.other, note: "Other non-elite players elite the next season" },
-      { label: "Elite stay-elite rate", stat: s.elite, note: "Elite players still elite the next season" },
-      { label: "Ball-striking year-to-year correlation", corr: s.bsCorr, note: "Pearson r, season t vs. t+1" },
+      { key: "candidate", label: "Candidate breakout rate", stat: s.candidate, note: "Candidates elite the next season", cls: "is-candidate" },
+      { key: "other", label: "Other non-elite breakout rate", stat: s.other, note: "Other non-elite players elite the next season" },
+      { key: "elite", label: "Elite stay-elite rate", stat: s.elite, note: "Elite players still elite the next season" },
+      { label: "Ball-striking year-to-year correlation", corr: s.bsCorr, note: "Pearson r, one season vs. the next" },
     ];
-    el.innerHTML = cards
-      .map((c) => {
+    const head =
+      `<div class="sc-col sc-head" aria-hidden="true"><span class="sc-hole">Hole</span><span class="sc-label">Measure</span>` +
+      `<span class="sc-value">Result</span><span class="sc-count">Count</span><span class="sc-note"></span></div>`;
+    el.innerHTML = head + cards
+      .map((c, i) => {
         const n = c.stat ? c.stat.n : c.corr.n;
         let body;
-        if (n < minGroup) {
-          const unit = c.stat ? "player-season" : "pair";
-          body = `<div class="too-few">Too few players</div><div class="card-count">${n} ${unit}${n === 1 ? "" : "s"} (needs ${minGroup}+)</div>`;
+        if (n < minGroup && excluded.has(c.key)) {
+          body = `<span class="sc-value sc-msg">The Player type filter excludes these players.</span><span class="sc-count card-count"></span>`;
+        } else if (n < minGroup) {
+          body = `<span class="sc-value sc-msg">${onlyN(n, c.stat ? "player-season" : "pair", minGroup)}</span><span class="sc-count card-count"></span>`;
         } else if (c.stat) {
-          body = `<div class="card-value">${pct(c.stat.rate)}</div><div class="card-count">${c.stat.hits} of ${c.stat.n.toLocaleString("en-US")}</div>`;
+          body = `<span class="sc-value card-value">${pct(c.stat.rate)}</span><span class="sc-count card-count">${c.stat.hits} of ${c.stat.n.toLocaleString("en-US")}</span>`;
         } else {
-          body = `<div class="card-value">${c.corr.r.toFixed(2)}</div><div class="card-count">${c.corr.n.toLocaleString("en-US")} pairs</div>`;
+          body = `<span class="sc-value card-value">${c.corr.r.toFixed(2)}</span><span class="sc-count card-count">${c.corr.n.toLocaleString("en-US")} pairs</span>`;
         }
         return (
-          `<div class="card ${c.cls || ""}">` +
-          `<div class="card-label">${esc(c.label)}</div>${body}<div class="card-note">${esc(c.note)}</div></div>`
+          `<div class="sc-col card ${c.cls || ""}"><span class="sc-hole">${i + 1}</span>` +
+          `<span class="sc-label card-label">${esc(c.label)}</span>${body}<span class="sc-note card-note">${esc(c.note)}</span></div>`
         );
       })
       .join("");
   }
 
-  root.Charts = { bars, hole, scatter, miniLine, scoreCards, showTip, hideTip, esc };
+  root.Charts = { bars, hole, scatter, scoreCards, onlyN, showTip, hideTip, esc };
 })(window);

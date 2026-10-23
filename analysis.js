@@ -18,7 +18,7 @@
   const SUMMARY_FIRST = 2015;
   const SUMMARY_LAST = 2020;
   const WATCH_SEASON = 2021;
-  const MIN_GROUP = 10; // fewer rows than this: show the count and a "too few players" note
+  const MIN_GROUP = 10; // fewer player-seasons than this: show "Only N player-seasons (needs 10+)" instead of a rate
 
   const DEFAULTS = Object.freeze({
     seasonFrom: SUMMARY_FIRST,
@@ -26,7 +26,7 @@
     group: "all",
     cutoff: 15,
     putting: true,
-    player: "",
+    players: Object.freeze([]), // selected player names; while any are selected, the group filter is ignored
   });
 
   function parseCSV(text) {
@@ -57,12 +57,12 @@
   }
 
   function filterRows(rows, opts) {
+    const players = opts.players || [];
     return rows.filter(
       (r) =>
         r.season >= opts.seasonFrom &&
         r.season <= opts.seasonTo &&
-        (!opts.player || r.player === opts.player) &&
-        (opts.group === "all" || groupOf(r, opts) === opts.group)
+        (players.length ? players.includes(r.player) : opts.group === "all" || groupOf(r, opts) === opts.group)
     );
   }
 
@@ -152,6 +152,23 @@
     });
   }
 
+  // Non-elite players above the ball-striking cutoff, split by putting:
+  // cold = putting below tour average (the candidates), warm = at or above it.
+  function puttingSplit(rows, cutoff) {
+    const strong = rows.filter((r) => r.elite === 0 && r.bs_pct > CUTOFFS[cutoff].pct);
+    // breakout share, plus average top-10 rate now and (for players with a qualified next season) next season
+    const part = (rs) => ({
+      ...share(rs, "elite_next"),
+      top10: mean(rs.map((r) => r.top10_rate)),
+      nextTop10: mean(rs.filter((r) => r.next_qualified === 1).map((r) => r.next_top10_rate)),
+    });
+    return {
+      all: part(strong),
+      cold: part(strong.filter((r) => r.sg_putt < 0)),
+      warm: part(strong.filter((r) => r.sg_putt >= 0)),
+    };
+  }
+
   // Finding 5: still elite two seasons later. Needs t+2, so season t = 2015-2019.
   function persistence(rows) {
     const w = rows.filter((r) => r.season >= SUMMARY_FIRST && r.season <= SUMMARY_LAST - 1);
@@ -180,7 +197,7 @@
   const api = {
     CUTOFFS, DEFAULTS, MIN_GROUP, SUMMARY_FIRST, SUMMARY_LAST, WATCH_SEASON, MEASURES,
     parseCSV, isCandidate, groupOf, filterRows, share, pearson, mean, summary,
-    categoryCorrelations, candidateMovement, cutoffRates, persistence, watchList, fmt,
+    categoryCorrelations, candidateMovement, cutoffRates, puttingSplit, persistence, watchList, fmt,
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;
