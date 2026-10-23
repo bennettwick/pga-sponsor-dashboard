@@ -61,6 +61,11 @@
       "qual.total": F.int(rows.length),
       "qual.range": `${Math.min(...d.counts)}–${Math.max(...d.counts)}`,
       "qual.seasons": Object.keys(d.perSeason).sort().map((k) => `${k}: ${d.perSeason[k]}`).join(", "),
+      // agreement table: same text format as the Tableau column, so the two can be compared exactly
+      "agree.cand": `${F.pct(s.candidate.rate)} (${F.of(s.candidate)})`,
+      "agree.other": `${F.pct(s.other.rate)} (${F.of(s.other)})`,
+      "agree.elite": `${F.pct(s.elite.rate)} (${F.of(s.elite)})`,
+      "agree.bs": `${F.r(s.bsCorr.r)} (${F.int(s.bsCorr.n)} pairs)`,
     };
     f1.items.forEach((i) => (v["f1." + i.key] = F.r(i.r)));
     f4.forEach((c) => {
@@ -69,6 +74,14 @@
       v[`f4.${c.cutoff}.n`] = c.n;
     });
     return v;
+  }
+
+  // Match column: "Yes" only when the website text and the typed Tableau text are identical.
+  function markAgreement() {
+    document.querySelectorAll("#agree-table tbody tr").forEach((tr) => {
+      const [, web, tab, match] = tr.cells;
+      match.textContent = web.textContent === tab.textContent ? "Yes" : "No";
+    });
   }
 
   // Small counts read better as words in a sentence ("Seven of the eight").
@@ -131,7 +144,7 @@
       { labels: true, height: window.innerWidth < 560 ? 400 : 480, xLabel: "Better ball-striking →", yLabel: "↑ Better putting", yLabelTop: true, aria: "2021 ball-striking vs putting, candidates labeled by their table number" });
 
     document.getElementById("watch-table").innerHTML =
-      `<thead><tr><th>No.</th><th>Player</th><th class="n">Ball-striking</th><th class="n">BS percentile</th><th class="n">Putting</th><th class="n">Top 10s</th><th class="n">Top-10 rate</th></tr></thead><tbody>` +
+      `<thead><tr><th>No.</th><th>Player</th><th class="n">Ball-striking</th><th class="n">Ball-striking percentile</th><th class="n">Putting</th><th class="n">Top 10s</th><th class="n">Top-10 rate</th></tr></thead><tbody>` +
       d.watch.map((r, i) =>
         `<tr><td class="hole">${i + 1}</td><td>${C.esc(r.player)}</td><td class="n">${F.sg(r.ball_striking)}</td><td class="n">${F.pct(r.bs_pct, 0)}</td>` +
         `<td class="n">${F.sg(r.sg_putt)}</td><td class="n">${r.top10s} of ${r.starts}</td><td class="n">${F.pct(r.top10_rate)}</td></tr>`
@@ -155,6 +168,7 @@
       lastW = window.innerWidth;
       const v = values(data);
       fill(v);
+      markAgreement();
       document.getElementById("focal").setAttribute("aria-label",
         `Candidates became elite the next season ${v.ratio} times as often as other non-elite players`);
       draw(data);

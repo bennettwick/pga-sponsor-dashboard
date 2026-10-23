@@ -267,6 +267,7 @@ details.fold > summary:focus-visible { outline: 2px solid var(--green); outline-
 .notes p { font-size: 0.95rem; color: var(--ink-2); }
 .notes table { font-size: 0.88rem; }
 .notes td { white-space: normal; vertical-align: top; }
+#agree-table td.n { white-space: nowrap; } /* keep "10.4% (8 of 77)" on one line */
 code { font-family: ui-monospace, Consolas, monospace; font-size: 0.84em; background: var(--sand); padding: 0.05rem 0.25rem; border-radius: 2px; }
 
 footer.site-foot { border-top: 1px solid var(--rule); padding: 1.4rem 0 2.4rem; color: var(--muted); font-size: 0.86rem; }
@@ -430,6 +431,9 @@ button.linklike, td button.linklike { background: none; border: 0; padding: 0; m
   #cost-table { font-size: 0.8rem; }
   #cost-table th, #cost-table td { white-space: normal; padding-left: 0.25rem; padding-right: 0.25rem; vertical-align: bottom; }
   #cost-table th:first-child, #cost-table td:first-child { padding-left: 0; }
+  #agree-table { font-size: 0.8rem; }
+  #agree-table th, #agree-table td { padding-left: 0.25rem; padding-right: 0.25rem; }
+  #agree-table th:first-child, #agree-table td:first-child { padding-left: 0; }
   .leaderboard th { font-size: 0.6rem; letter-spacing: 0.04em; white-space: normal; vertical-align: bottom; }
   .leaderboard th, .leaderboard td { padding-left: 0.25rem; padding-right: 0.25rem; }
   .leaderboard td.hole { width: 1.6rem; padding-left: 0; }

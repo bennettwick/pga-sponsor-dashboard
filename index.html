@@ -285,6 +285,24 @@
             <li>Signings per breakout = 1 ÷ breakout rate. Break-even cost ratio = other non-elite rate ÷ candidate rate.</li>
           </ul>
 
+          <h3>Website and Tableau agree</h3>
+          <p>The same four summary numbers were built separately on this website and in a Tableau Public dashboard, both from <code>players.csv</code>.
+            Both count the same rows: seasons 2015–2020, each compared with the following season, under the default candidate definition (not elite,
+            top-15% ball-striking, putting below tour average) and all player types; on the website these are the report's numbers and the dashboard's
+            default filters, and in Tableau all seasons 2015–2020 are selected.</p>
+          <div class="table-wrap">
+            <table id="agree-table">
+              <thead><tr><th>Number</th><th class="n">Website</th><th class="n">Tableau</th><th>Match</th></tr></thead>
+              <tbody>
+                <tr><td>Candidate breakout rate</td><td class="n" data-k="agree.cand">…</td><td class="n">10.4% (8 of 77)</td><td>…</td></tr>
+                <tr><td>Other non-elite breakout rate</td><td class="n" data-k="agree.other">…</td><td class="n">2.8% (26 of 941)</td><td>…</td></tr>
+                <tr><td>Elite stay-elite rate</td><td class="n" data-k="agree.elite">…</td><td class="n">54.4% (43 of 79)</td><td>…</td></tr>
+                <tr><td>Ball-striking year-to-year correlation</td><td class="n" data-k="agree.bs">…</td><td class="n">0.69 (913 pairs)</td><td>…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><a href="https://public.tableau.com/app/profile/bennett.wicker/viz/PGABreakoutDashboard/BreakoutDashboard" target="_blank" rel="noopener">Tableau Public dashboard</a></p>
+
           <h3>Caveats</h3>
           <ul>
             <li>Majors mostly lack strokes-gained data, so skill comes from other events while results include majors.</li>

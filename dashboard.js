@@ -328,7 +328,7 @@
     { key: "season", label: "Season", n: true },
     { key: "group", label: "Player type" },
     { key: "ball_striking", label: "Ball-striking", n: true },
-    { key: "bs_pct", label: "BS pct", n: true },
+    { key: "bs_pct", label: "Ball-striking percentile", n: true },
     { key: "sg_putt", label: "Putting", n: true },
     { key: "top10_rate", label: "Top-10 rate", n: true },
     { key: "elite_next", label: "Elite next season" },

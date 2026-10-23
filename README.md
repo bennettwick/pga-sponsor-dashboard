@@ -10,6 +10,7 @@
 
 - Report: https://bennettwick.github.io/pga-sponsor-dashboard/
 - Dashboard: https://bennettwick.github.io/pga-sponsor-dashboard/dashboard.html
+- Tableau: https://public.tableau.com/app/profile/bennett.wicker/viz/PGABreakoutDashboard/BreakoutDashboard
 
 By Bennett Wicker.
 
@@ -24,7 +25,7 @@ Candidates (not elite, top-15% ball-striking, putting below tour average) became
 | `pga_raw.csv` | Raw data: one player in one tournament, 36,864 rows, 37 columns, seasons 2015–2022 |
 | `prep_data.py` | Cleans the raw file and writes `players.csv` (Python standard library only: `python prep_data.py`) |
 | `players.csv` | One row per qualified player-season (2015–2021) with skill measures, flags and next-season outcomes |
-| `index.html` | Report page: answer, recommendation, four summary numbers, five findings, watch list, data notes |
+| `index.html` | Report page: answer, recommendation, four summary numbers, five findings, watch list, data notes, agreement table |
 | `dashboard.html` | Dashboard page: filters, the same four numbers, charts, cost tool and the rows behind the view |
 | `analysis.js` | Shared calculations used by both pages (summary numbers, correlations, findings) |
 | `charts.js` | Shared chart drawing (bars, tee-to-pin dumbbell, scatter, scorecard tiles) |
