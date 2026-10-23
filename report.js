@@ -121,7 +121,7 @@
     ], { aria: "Candidate breakout rate by ball-striking cutoff" });
 
     C.bars(document.getElementById("f5-chart"), [
-      { label: "New breakouts", sub: "elite in t+1 only", value: f5.breakouts.rate, display: F.pct(f5.breakouts.rate), of: F.of(f5.breakouts), cls: "other" },
+      { label: "Breakouts", sub: "elite in t+1 only", value: f5.breakouts.rate, display: F.pct(f5.breakouts.rate), of: F.of(f5.breakouts), cls: "other" },
       { label: "Established elite", sub: "elite in t and t+1", value: f5.repeat.rate, display: F.pct(f5.repeat.rate), of: F.of(f5.repeat), cls: "elite" },
     ], { max: 1, room: 0.8, aria: "Still elite two seasons later" });
 
